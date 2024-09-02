@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -Wall -pthread
-TARGETS = publicador desenfocador realzador combinador output.bmp
+TARGETS = publicador desenfocador realzador combinador
 
 all: $(TARGETS)
 
@@ -19,5 +19,5 @@ combinador: combinador.c bmp.h
 	$(CC) $(CFLAGS) -o combinador combinador.c
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) output.bmp
 
