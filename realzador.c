@@ -7,6 +7,7 @@
 #include "bmp.h"
 
 #define SHM_KEY 12345
+#define MAX_IMAGE_SIZE 1024*1024*10
 #define KERNEL_SIZE 3
 
 typedef struct {
