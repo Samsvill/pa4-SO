@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
         freeImage(imageIn);
         return 1;
     }
-    imageOut->header.size = imageIn->header.width_px * imageIn->height_px * sizeof(Pixel) + sizeof(imageIn->header);
+    imageOut->header.size = imageIn->header.width_px * imageIn->header.height_px * sizeof(Pixel) + sizeof(imageIn->header);
     imageOut->norm_height = abs(imageIn->header.height_px);
     imageOut->bytes_per_pixel = imageIn->header.bits_per_pixel/8;
     imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
