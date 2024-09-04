@@ -13,7 +13,7 @@ int edgeEnhanceFilter[3][3] = {
 
 int blurFilter[3][3] = {
     {1, 1, 1},
-    {1, 1, 1},
+    {1, 9, 1},
     {1, 1, 1}
 };
 
