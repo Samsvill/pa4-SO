@@ -88,7 +88,12 @@ int main(int argc, char *argv[]) {
     fclose(imageFile);
 
     // Crear la imagen de salida con las mismas dimensiones
-    BMP_Image *imageOut = createBMPImage(NULL);
+    BMP_Image *imageOut = (BMP_Image *)malloc(sizeof(BMP_Image));
+    if (imageOut == NULL) {
+        fprintf(stderr, "Error al asignar memoria para la imagen de salida\n");
+        freeImage(imageIn);
+        return 1;
+    }
     imageOut->header = imageIn->header;
     imageOut->norm_height = imageIn->norm_height;
     imageOut->bytes_per_pixel = imageIn->bytes_per_pixel;
