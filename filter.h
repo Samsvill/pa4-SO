@@ -11,9 +11,9 @@ typedef struct {
 	int endRow;
 } FilterThreadArgs;
 
+// Declaraciones de filtros predefinidos
+extern int edgeEnhanceFilter[3][3];
+extern int blurFilter[3][3];
 
-void apply(BMP_Image * imageIn, BMP_Image * imageOut);
-
-void applyParallel(BMP_Image * imageIn, BMP_Image * imageOut, int boxFilter[3][3], int numThreads);
-
-void *filterThreadWorker(void * args);
+// Función para aplicar un filtro específico en un rango de filas
+void *applyFilter(void *args);
