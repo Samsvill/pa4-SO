@@ -43,11 +43,11 @@ void readImage(FILE* srcFile, BMP_Image* dataImage) {
 
 BMP_Image* createBMPImage(FILE *fptr) {
     if (fptr == NULL) {
-        fprintf(stderr, "Error: Puntero de archivo nulo en createBMPImage\n");
-        return NULL;
+        printError(FILE_ERROR);
+        exit(EXIT_FAILURE);
     }
 
-    BMP_Image *image = (BMP_Image *)malloc(sizeof(BMP_Image));
+    BMP_Image* image = (BMP_Image*)malloc(sizeof(BMP_Image));
     if (image == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
@@ -55,7 +55,7 @@ BMP_Image* createBMPImage(FILE *fptr) {
 
     // Leer el encabezado de la imagen
     fread(&(image->header), sizeof(BMP_Header), 1, fptr);
-    image->header.size = image->header.width_px * image->header.height_px * sizeof(Pixel) + HEADER_SIZE;
+    image->header.size = image->header.width_px * image->header.height_px * sizeof(Pixel) + sizeof(image->header);
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
@@ -79,6 +79,7 @@ BMP_Image* createBMPImage(FILE *fptr) {
           image->pixels[899][599].blue);
 
     readImage(fptr, image);
+    
     return image;
     }
 
