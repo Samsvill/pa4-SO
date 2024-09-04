@@ -58,37 +58,29 @@ BMP_Image* createBMPImage(FILE *fptr) {
     image->header.size = image->header.width_px * image->header.height_px * sizeof(Pixel) + HEADER_SIZE;
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
+
     image->pixels = (Pixel**)malloc(image->norm_height * sizeof(Pixel*));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
-    int padding = (4 - (image->header.width_px * sizeof(Pixel)) % 4) % 4;
-    // Asignar memoria para los píxeles
-    image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
-    if (image->pixels == NULL) {
-        printError(MEMORY_ERROR);
-        exit(EXIT_FAILURE);
-    }
-
+    
     for (int i = 0; i < image->norm_height; i++) {
         image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
         if (image->pixels[i] == NULL) {
             printError(MEMORY_ERROR);
             exit(EXIT_FAILURE);
         }
-        
-        printf("Creating image\n \n");
-        for (int j = 0; j < image->header.width_px; j++) {
-            printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
-                image->pixels[i][j].red, 
-                image->pixels[i][j].green, 
-                image->pixels[i][j].blue);
-        }
-    }
+}
+
+    printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", 899, 599, 
+          image->pixels[899][599].red, 
+          image->pixels[899][599].green, 
+          image->pixels[899][599].blue);
+
     readImage(fptr, image);
     return image;
-}
+    }
 
 
 
