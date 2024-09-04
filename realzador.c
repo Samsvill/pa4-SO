@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
     //Guardar la imagen resultante
     char outputFile[] = "output_enhanced.bmp";
-    writeImage(outputFile, imageIn);
+    writeImage(outputFile, imageOut);
 
 
     printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
