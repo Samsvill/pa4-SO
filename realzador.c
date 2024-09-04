@@ -76,7 +76,7 @@ greenValue = (greenValue > 255) ? 255 : (greenValue < 0) ? 0 : greenValue;
 redValue = (redValue > 255) ? 255 : (redValue < 0) ? 0 : redValue;
 alphaValue = (alphaValue > 255) ? 255 : (alphaValue < 0) ? 0 : alphaValue;
 
-imageOut->pixels[row][col].blue = (uint8_t)200;
+imageOut->pixels[row][col].blue = 200;
 imageOut->pixels[row][col].green = (uint8_t)greenValue;
 imageOut->pixels[row][col].red = (uint8_t)redValue;
 imageOut->pixels[row][col].alpha = (uint8_t)alphaValue;
