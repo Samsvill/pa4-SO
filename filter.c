@@ -1,6 +1,7 @@
 #include "filter.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 // Definición del filtro de realce de bordes (Edge Enhance)
 int edgeEnhanceFilter[3][3] = {
