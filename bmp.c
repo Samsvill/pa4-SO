@@ -41,39 +41,48 @@ void readImage(FILE* srcFile, BMP_Image* dataImage) {
 }
 
 
-BMP_Image* createBMPImage(FILE* fptr) {
-  
-  BMP_Image* image = (BMP_Image*)malloc(sizeof(BMP_Image));
-  if (image == NULL) {
-    printError(MEMORY_ERROR);
-    exit(EXIT_FAILURE);
-  }
-
-  fread(&(image->header), sizeof(BMP_Header), 1, fptr);
-
-  image->header.size = image->header.width_px * image->header.height_px * sizeof(Pixel) + HEADER_SIZE;
-  image->norm_height = abs(image->header.height_px);
-  image->bytes_per_pixel = image->header.bits_per_pixel / 8;
-  
-  image->pixels = (Pixel**)malloc(image->norm_height * sizeof(Pixel*));
-
-  if (image->pixels == NULL) {
-    printError(MEMORY_ERROR);
-    exit(EXIT_FAILURE);
-  }
-
-  for (int i = 0; i < image->norm_height; i++) {
-    image->pixels[i] = (Pixel*)malloc(image->header.width_px * sizeof(Pixel));
-    if (image->pixels[i] == NULL) {
-      printError(MEMORY_ERROR);
-      exit(EXIT_FAILURE);
+BMP_Image* createBMPImage(FILE *fptr) {
+    if (fptr == NULL) {
+        fprintf(stderr, "Error: Puntero de archivo nulo en createBMPImage\n");
+        return NULL;
     }
-  }
 
-  readImage(fptr, image);
+    BMP_Image *image = (BMP_Image *)malloc(sizeof(BMP_Image));
+    if (image == NULL) {
+        fprintf(stderr, "Error al asignar memoria para BMP_Image\n");
+        return NULL;
+    }
 
-  return image;
+    // Leer el encabezado de la imagen
+    fread(&image->header, sizeof(BMP_Header), 1, fptr);
+    image->norm_height = abs(image->header.height_px);
+    image->bytes_per_pixel = image->header.bits_per_pixel / 8;
+
+    // Asignar memoria para los píxeles
+    image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
+    if (image->pixels == NULL) {
+        fprintf(stderr, "Error al asignar memoria para los píxeles\n");
+        free(image);
+        return NULL;
+    }
+
+    for (int i = 0; i < image->norm_height; i++) {
+        image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
+        if (image->pixels[i] == NULL) {
+            fprintf(stderr, "Error al asignar memoria para la fila %d\n", i);
+            for (int j = 0; j < i; j++) {
+                free(image->pixels[j]);
+            }
+            free(image->pixels);
+            free(image);
+            return NULL;
+        }
+        fread(image->pixels[i], sizeof(Pixel), image->header.width_px, fptr);
+    }
+
+    return image;
 }
+
 
 
 void writeImage(char* destFileName, BMP_Image* dataImage) {

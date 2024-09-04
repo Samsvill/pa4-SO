@@ -75,13 +75,13 @@ int main(int argc, char *argv[]) {
 
     FILE *imageFile = fopen(inputFile, "rb");
     if (imageFile == NULL) {
-        perror("No se pudo abrir el archivo de imagen");
+        perror("Error al abrir el archivo de imagen");
         return 1;
     }
 
     BMP_Image *imageIn = createBMPImage(imageFile);
     if (imageIn == NULL) {
-        perror("Error al cargar la imagen");
+        fprintf(stderr, "Error al cargar la imagen\n");
         fclose(imageFile);
         return 1;
     }
