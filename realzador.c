@@ -138,8 +138,8 @@ int main(int argc, char *argv[])
     //Crear y lanzar los hilos para procesar la imagen en paralelo
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = imageIn->header.height_px / numThreads;
-    int remainingRows = imageIn->header.height_px % numThreads;
+    int rowsPerThread = imageIn->abs(header.height_px) / numThreads;
+    int remainingRows = imageIn->abs(header.height_px) % numThreads;
 
     for (int i = 0; i < numThreads; i++)
     {
