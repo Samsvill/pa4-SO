@@ -41,7 +41,6 @@ void *applyEdgeEnhance(void *args) {
                     int newRow = row + x;
                     int newCol = col + y;
 
-                    // Asegurarse de que estamos dentro de los límites de la imagen
                     if (newRow >= 0 && newRow < imageIn->header.height_px && newCol >= 0 && newCol < imageIn->header.width_px) {
                         Pixel *p = &imageIn->pixels[newRow][newCol];
                         sumBlue += edgeEnhanceFilter[x + 1][y + 1] * p->blue;
@@ -57,10 +56,15 @@ void *applyEdgeEnhance(void *args) {
             pOut->green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
             pOut->red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
             pOut->alpha = 255;  // Asignar valor alfa como opaco
+            
+            // Imprimir los valores procesados
+            printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", row, col, 
+                pOut->red, pOut->green, pOut->blue);
         }
     }
     return NULL;
 }
+
 
 // Función principal
 int main(int argc, char *argv[]) {

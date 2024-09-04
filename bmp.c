@@ -58,6 +58,7 @@ BMP_Image* createBMPImage(FILE *fptr) {
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
+    int padding = (4 - (image->header.width_px * sizeof(Pixel)) % 4) % 4;
     // Asignar memoria para los píxeles
     image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
     if (image->pixels == NULL) {
@@ -65,8 +66,6 @@ BMP_Image* createBMPImage(FILE *fptr) {
         free(image);
         return NULL;
     }
-
-    int padding = (4 - (image->header.width_px * sizeof(Pixel)) % 4) % 4;
 
     for (int i = 0; i < image->norm_height; i++) {
         image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
@@ -79,12 +78,21 @@ BMP_Image* createBMPImage(FILE *fptr) {
             free(image);
             return NULL;
         }
-    fread(image->pixels[i], sizeof(Pixel), image->header.width_px, fptr);
-    fseek(fptr, padding, SEEK_CUR);
+        // Leer los píxeles de la fila
+        fread(image->pixels[i], sizeof(Pixel), image->header.width_px, fptr);
+        fseek(fptr, padding, SEEK_CUR);  // Saltar el padding al final de la fila
+        // Imprimir los valores de los píxeles leídos
+        for (int j = 0; j < image->header.width_px; j++) {
+            printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
+                image->pixels[i][j].red, 
+                image->pixels[i][j].green, 
+                image->pixels[i][j].blue);
+        }
     }
 
     return image;
 }
+
 
 
 
@@ -105,10 +113,17 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
   for (int i = 0; i < dataImage->norm_height; i++) {
     fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
     for (int j = 0; j < paddingSize; j++) {
-      fputc(0x00, destFile);
+      fwrite("\0\0\0", paddingSize, 1, destFile);
+
+    // imprimir los valores de los píxeles escritos
+    for (int j = 0; j < dataImage->header.width_px; j++) {
+      printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
+          dataImage->pixels[i][j].red, 
+          dataImage->pixels[i][j].green, 
+          dataImage->pixels[i][j].blue);
     }
   }
-  
+
   fclose(destFile);
 }
 
