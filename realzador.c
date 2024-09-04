@@ -43,13 +43,10 @@ void *applyEdgeEnhance(void *args)
     printf("filtro -------------------- aqui se entra al proceso de filtrado\n");
     for (int row = startRow; row < endRow; row++)
     {
-        printf("Entro al primer for\n");
-        printf("Fila %d\n", row);
         for (int col = 0; col < imageIn->header.width_px; col++)
         {
-            printf("Columna %d\n", col);
             int sumBlue = 0, sumGreen = 0, sumRed = 0, sumAlpha = 0;
-
+            printf("Fila %d, Columna %d\n", row, col);
             for (int x = -1; x <= 1; x++)
             {
                 for (int y = -1; y <= 1; y++)
