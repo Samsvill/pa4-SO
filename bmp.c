@@ -125,6 +125,7 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
   }
 
   fclose(destFile);
+  }
 }
 
 void freeImage(BMP_Image* image) {
