@@ -73,6 +73,12 @@ BMP_Image* createBMPImage(FILE *fptr) {
             exit(EXIT_FAILURE);
         }
         fread(image->pixels[i], image->bytes_per_pixel, image->header.width_px, fptr);
+        for (int j = 0; j < image->header.width_px; j++) {
+            printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
+          image->pixels[i][j].red, 
+          image->pixels[i][j].green, 
+          image->pixels[i][j].blue);
+        }
 }
     
     printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", 899, 599, 
