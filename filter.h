@@ -16,7 +16,8 @@ typedef struct {
     int endRow;
     BMP_Image *imageIn;
     BMP_Image *imageOut;
-    int filter[3][3];  // Permitir aplicar filtros diferentes
+    int (*filter)[3];
 } ThreadArgs;
+
 
 #endif // FILTER_H

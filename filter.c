@@ -9,7 +9,7 @@ int edgeEnhanceFilter[3][3] = {
     {-1, -1, -1}
 };
 
-// Ejemplo de otros filtros
+
 int blurFilter[3][3] = {
     {1, 1, 1},
     {1, 1, 1},

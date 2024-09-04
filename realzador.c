@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     FILE *imageFile = fopen(inputFile, "rb");
     if (imageFile == NULL) {
-        perror("Error al abrir el archivo de imagen");
+        printError(FILE_ERROR);
         return 1;
     }
 
@@ -34,11 +34,11 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? abs(imageIn->header.height_px) : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = edgeEnhanceFilter;  // Aquí seleccionamos el filtro a aplicar
-
-        printf("Hilo %d: Procesando desde fila %d hasta fila %d\n", i, threadArgs[i].startRow, threadArgs[i].endRow);
+        threadArgs[i].filter = edgeEnhanceFilter;
+        //printf("Hilo %d: Procesando desde fila %d hasta fila %d\n", i, threadArgs[i].startRow, threadArgs[i].endRow);
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
+
 
     // Esperar a que todos los hilos terminen
     for (int i = 0; i < numThreads; i++) {
