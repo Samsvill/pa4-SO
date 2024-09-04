@@ -32,9 +32,9 @@ void *applyEdgeEnhance(void *args)
 
     // Filtro de realce de bordes
     int edgeEnhanceFilter[3][3] = {
-        {1, 1, 1},
-        {1, 1, 1},
-        {1, 1, 1}};
+        {-1, -1, -1},
+        {-1, FILTER_SIZE, -1},
+        {-1, -1, -1}};
     
     printf("filtro: Ancho de la imagen: %d\n", imageIn->header.width_px);
     printf("filtro: Alto de la imagen: %d\n", imageIn->header.height_px);
@@ -53,28 +53,21 @@ void *applyEdgeEnhance(void *args)
                 {
                     int newRow = row + x;
                     int newCol = col + y;
-                    printf("newRow: %d, newCol: %d\n", newRow, newCol);
                     if (newRow >= 0 && newRow < abs(imageIn->header.height_px) && 
                         newCol >= 0 && newCol < imageIn->header.width_px)
                     {
-                        printf("edgeEnhanceFilter[%d][%d]: %d\n", x + 1, y + 1, edgeEnhanceFilter[x + 1][y + 1]);
-                        printf("blue, green y red antes de multiplicar: %d, %d, %d\n", imageIn->pixels[newRow][newCol].blue, imageIn->pixels[newRow][newCol].green, imageIn->pixels[newRow][newCol].red);
-                        printf("haciendo la multiplicacion\n");
                         sumBlue += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].blue;
                         sumGreen += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].green;
                         sumRed += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].red;
-                        printf("blue, green y red despues de multiplicar: %d, %d, %d\n", sumBlue, sumGreen, sumRed);
                     }
                 }
             }
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
-            imageOut->pixels[row][col].blue = (sumBlue / 9);
-            imageOut->pixels[row][col].green = (sumGreen / 9);
-            imageOut->pixels[row][col].red = (sumRed / 9);
+            imageOut->pixels[row][col].blue = (sumBlue / FILTER_SIZE);
+            imageOut->pixels[row][col].green = (sumGreen / FILTER_SIZE);
+            imageOut->pixels[row][col].red = (sumRed / FILTER_SIZE);
             imageOut->pixels[row][col].alpha = (255);
-
-            // Imprimir los valores procesados
         }
     }
     pthread_exit(NULL);
