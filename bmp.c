@@ -78,7 +78,7 @@ BMP_Image* createBMPImage(FILE *fptr) {
             exit(EXIT_FAILURE);
         }
         
-        // Imprimir los valores de los píxeles leídos
+        printf("Creating image\n \n");
         for (int j = 0; j < image->header.width_px; j++) {
             printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
                 image->pixels[i][j].red, 
@@ -103,10 +103,8 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
   // Escribir el encabezado en el archivo de destino
   fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
 
-  // Calcular el tamaño del padding
-  int paddingSize = (4 - (dataImage->header.width_px * sizeof(Pixel)) % 4) % 4;
 
-  // Escribir datos de imagen fila por fila con padding
+  // Escribir datos de imagen fila por fila
   for (int i = 0; i < dataImage->norm_height; i++) {
     if (dataImage->pixels[i] == NULL){
       printError(MEMORY_ERROR);
@@ -115,6 +113,7 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
     fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
     
     // imprimir los valores de los píxeles escritos
+    printf("Write Image\n");
     for (int j = 0; j < dataImage->header.width_px; j++) {
       printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", i, j, 
           dataImage->pixels[i][j].red, 
