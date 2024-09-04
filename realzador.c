@@ -57,10 +57,10 @@ void *applyEdgeEnhance(void *args)
                     if (newRow >= 0 && newRow < imageIn->header.height_px && 
                         newCol >= 0 && newCol < imageIn->header.width_px)
                     {
-                        sumBlue += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].blue;
-                        sumGreen += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].green;
-                        sumRed += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].red;
-                        sumAlpha += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].alpha;
+                        sumBlue += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].blue;
+                        sumGreen += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].green;
+                        sumRed += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].red;
+                        sumAlpha += edgeEnhanceFilter[x + 1][y + 1] * imageIn->pixels[newRow][newCol].alpha;
                     }
                 }
             }
