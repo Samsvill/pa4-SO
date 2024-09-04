@@ -20,7 +20,7 @@ typedef struct {
 // Filtro de realce de bordes
 int edgeEnhanceFilter[3][3] = {
     {-1, -1, -1},
-    {-1,  9, -1},
+    {-1,  5, -1},
     {-1, -1, -1}
 };
 
@@ -97,10 +97,28 @@ int main(int argc, char *argv[]) {
     imageOut->header = imageIn->header;
     imageOut->norm_height = imageIn->norm_height;
     imageOut->bytes_per_pixel = imageIn->bytes_per_pixel;
-    imageOut->pixels = malloc(imageOut->norm_height * sizeof(Pixel *));
-    for (int i = 0; i < imageOut->norm_height; i++) {
-        imageOut->pixels[i] = malloc(imageOut->header.width_px * sizeof(Pixel));
+    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
+        if (imageOut->pixels == NULL) {
+            fprintf(stderr, "Error al asignar memoria para los píxeles de la imagen de salida\n");
+            freeImage(imageIn);
+            free(imageOut);
+            return 1;
     }
+
+    for (int i = 0; i < imageOut->norm_height; i++) {
+    imageOut->pixels[i] = (Pixel *)malloc(imageOut->header.width_px * sizeof(Pixel));
+    if (imageOut->pixels[i] == NULL) {
+        fprintf(stderr, "Error al asignar memoria para la fila de píxeles %d de la imagen de salida\n", i);
+        // Liberar la memoria ya asignada antes de salir
+        for (int j = 0; j < i; j++) {
+            free(imageOut->pixels[j]);
+        }
+        free(imageOut->pixels);
+        freeImage(imageIn);
+        free(imageOut);
+        return 1;
+    }
+}
 
     // Crear y lanzar los hilos para procesar la imagen en paralelo
     pthread_t threads[numThreads];

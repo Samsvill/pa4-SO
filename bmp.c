@@ -66,10 +66,12 @@ BMP_Image* createBMPImage(FILE *fptr) {
         return NULL;
     }
 
+    int padding = (4 - (image->header.width_px * sizeof(Pixel)) % 4) % 4;
+
     for (int i = 0; i < image->norm_height; i++) {
         image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
         if (image->pixels[i] == NULL) {
-            fprintf(stderr, "Error al asignar memoria para la fila %d\n", i);
+            fprintf(stderr, "Error al asignar memoria para la fila de píxeles %d\n", i);
             for (int j = 0; j < i; j++) {
                 free(image->pixels[j]);
             }
@@ -77,7 +79,8 @@ BMP_Image* createBMPImage(FILE *fptr) {
             free(image);
             return NULL;
         }
-        fread(image->pixels[i], sizeof(Pixel), image->header.width_px, fptr);
+    fread(image->pixels[i], sizeof(Pixel), image->header.width_px, fptr);
+    fseek(fptr, padding, SEEK_CUR);
     }
 
     return image;
@@ -95,11 +98,17 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
   // Escribir el encabezado en el archivo de destino
   fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
 
-  // Escribir datos de imagen fila por fila
+  // Calcular el tamaño del padding
+  int paddingSize = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
+
+  // Escribir datos de imagen fila por fila con padding
   for (int i = 0; i < dataImage->norm_height; i++) {
     fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
+    for (int j = 0; j < paddingSize; j++) {
+      fputc(0x00, destFile);
+    }
   }
-
+  
   fclose(destFile);
 }
 
