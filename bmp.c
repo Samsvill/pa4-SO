@@ -117,7 +117,7 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
     }
     fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
     for (int j = 0; j < paddingSize; j++) {
-      fwrite("\0\0\0", paddingSize, 1, destFile);
+      fwrite("\0", sizeof(uint8_t), 1, destFile);
 
     // imprimir los valores de los píxeles escritos
     for (int j = 0; j < dataImage->header.width_px; j++) {
