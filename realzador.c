@@ -49,13 +49,11 @@ void *applyEdgeEnhance(void *args)
             printf("Fila %d, Columna %d\n", row, col);
             for (int x = -1; x <= 1; x++)
             {
-                printf("x: %d\n", x);
                 for (int y = -1; y <= 1; y++)
                 {
-                    printf("y: %d\n", y);
                     int newRow = row + x;
                     int newCol = col + y;
-
+                    printf("newRow: %d, newCol: %d\n", newRow, newCol);
                     if (newRow >= 0 && newRow < imageIn->header.height_px && 
                         newCol >= 0 && newCol < imageIn->header.width_px)
                     {
