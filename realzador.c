@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numThreads; i++)
     {
         threadArgs[i].startRow = i * rowsPerThread;
-        threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
+        threadArgs[i].endRow = (i == numThreads - 1) ? abs(imageIn->header.height_px) : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
 
