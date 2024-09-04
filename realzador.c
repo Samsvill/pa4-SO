@@ -37,8 +37,13 @@ void *applyEdgeEnhance(void *args)
         {1, 1, 1}};
     
     printf("filtro: Ancho de la imagen: %d\n", imageIn->header.width_px);
+    printf("filtro: Alto de la imagen: %d\n", imageIn->header.height_px);
+    printf("filtro: Inicio de la fila: %d\n", startRow);
+    printf("filtro: Fin de la fila: %d\n", endRow);
+    printf("filtro -------------------- aqui se entra al proceso de filtrado\n");
     for (int row = startRow; row < endRow; row++)
     {
+        printf("Entro al primer for\n");
         printf("Fila %d\n", row);
         for (int col = 0; col < imageIn->header.width_px; col++)
         {
