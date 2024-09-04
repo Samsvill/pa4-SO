@@ -8,6 +8,7 @@
 #include "filter.h"
 
 #define SHM_SIZE sizeof(BMP_Image)
+#define FILTER_SIZE 3
 
 // Estructura para pasar los argumentos a cada hilo
 typedef struct
@@ -21,7 +22,7 @@ typedef struct
 // Filtro de realce de bordes
 int edgeEnhanceFilter[3][3] = {
     {-1, -1, -1},
-    {-1, 5, -1},
+    {-1, FILTER_SIZE, -1},
     {-1, -1, -1}};
 
 // Función que aplica el filtro de realce a una parte de la imagen
@@ -33,8 +34,11 @@ void *applyEdgeEnhance(void *args)
     BMP_Image *imageIn = tArgs->imageIn;
     BMP_Image *imageOut = tArgs->imageOut;
 
+    
+    printf("Ancho de la imagen: %d\n", imageIn->header.width_px);
     for (int row = startRow; row < endRow; row++)
     {
+        printf("imagein->header.width_px: %d\n", imageIn->header.width_px);
         for (int col = 0; col < imageIn->header.width_px; col++)
         {
             int sumBlue = 0, sumGreen = 0, sumRed = 0, sumAlpha = 0;
@@ -46,7 +50,8 @@ void *applyEdgeEnhance(void *args)
                     int newRow = row + x;
                     int newCol = col + y;
 
-                    if (newRow >= 0 && newRow < imageIn->header.height_px && newCol >= 0 && newCol < imageIn->header.width_px)
+                    if (newRow >= 0 && newRow < imageIn->header.height_px && 
+                        newCol >= 0 && newCol < imageIn->header.width_px)
                     {
                         Pixel *p = &imageIn->pixels[newRow][newCol];
                         sumBlue += edgeEnhanceFilter[x + 1][y + 1] * p->blue;
@@ -59,10 +64,10 @@ void *applyEdgeEnhance(void *args)
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
             Pixel *pOut = &imageOut->pixels[row][col];
-            pOut->blue = sumBlue / 5;
-            pOut->green = sumGreen / 5;
-            pOut->red = sumRed / 5;
-            pOut->alpha = sumAlpha / 5;
+            pOut->blue = sumBlue / FILTER_SIZE;
+            pOut->green = sumGreen / FILTER_SIZE;
+            pOut->red = sumRed / FILTER_SIZE;
+            pOut->alpha = sumAlpha / FILTER_SIZE;
 
             // Imprimir los valores procesados
             printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", row, col,
@@ -130,42 +135,33 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Crear y lanzar los hilos para procesar la imagen en paralelo
-    //pthread_t threads[numThreads];
-    //ThreadArgs threadArgs[numThreads];
-    //int rowsPerThread = imageIn->header.height_px / numThreads;
-//
-    //for (int i = 0; i < numThreads; i++)
-    //{
-    //    threadArgs[i].startRow = i * rowsPerThread;
-    //    threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
-    //    threadArgs[i].imageIn = imageIn;
-    //    threadArgs[i].imageOut = imageOut;
-    //    pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
-    //}
-//
-    //// Esperar a que todos los hilos terminen
-    //for (int i = 0; i < numThreads; i++)
-    //{
-    //    pthread_join(threads[i], NULL);
-    //}
+    //Crear y lanzar los hilos para procesar la imagen en paralelo
+    pthread_t threads[numThreads];
+    ThreadArgs threadArgs[numThreads];
+    int rowsPerThread = imageIn->header.height_px / numThreads;
+    int remainingRows = imageIn->header.height_px % numThreads;
 
-    //Guardar la misma imagen que se recibe para probar que se guardan los valores correctos
-    FILE *outputFile = fopen("output.bmp", "wb");
-    if (outputFile == NULL)
+    for (int i = 0; i < numThreads; i++)
     {
-        perror("Error al abrir el archivo de imagen de salida");
-        return 1;
+        threadArgs[i].startRow = i * rowsPerThread;
+        threadArgs[i].endRow = threadArgs[i].startRow + rowsPerThread + (i < remainingRows ? 1 : 0);
+        threadArgs[i].imageIn = imageIn;
+        threadArgs[i].imageOut = imageOut;
+        pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
+        printf("Hilo %d: Procesando desde fila %d hasta fila %d\n", i, threadArgs[i].startRow, threadArgs[i].endRow);
     }
-    writeImage("output.bmp", imageIn);
-    fclose(outputFile);
 
-    // Guardar la imagen resultante
-    //char outputFile[] = "output_enhanced.bmp";
-    //writeImage(outputFile, imageOut);
+    // Esperar a que todos los hilos terminen
+    for (int i = 0; i < numThreads; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+    
+     Guardar la imagen resultante
+    char outputFile[] = "output_enhanced.bmp";
+    writeImage(outputFile, imageOut);
 
-    printf("imagen original guardada en: %s\n", "output.bmp");
-    //printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
+    printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
 
     // Liberar la memoria
     freeImage(imageIn);
