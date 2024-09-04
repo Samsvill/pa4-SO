@@ -54,7 +54,7 @@ void *applyEdgeEnhance(void *args)
                     int newRow = row + x;
                     int newCol = col + y;
                     printf("newRow: %d, newCol: %d\n", newRow, newCol);
-                    if (newRow >= 0 && newRow < imageIn->header.height_px && 
+                    if (newRow >= 0 && newRow < abs(imageIn->header.height_px) && 
                         newCol >= 0 && newCol < imageIn->header.width_px)
                     {
                         printf("edgeEnhanceFilter[%d][%d]: %d\n", x + 1, y + 1, edgeEnhanceFilter[x + 1][y + 1]);
