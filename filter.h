@@ -4,8 +4,10 @@
 #include "bmp.h"
 
 // Declaraciones de filtros predefinidos
-extern int edgeEnhanceFilter[3][3];
+extern int simplifiedSobelFilter[3][3];
+extern int simpleEdgeEnhanceFilter[3][3];
 extern int blurFilter[3][3];
+extern int sharpenFilter[3][3];
 
 // Función para aplicar un filtro específico en un rango de filas
 void *applyFilter(void *args);
