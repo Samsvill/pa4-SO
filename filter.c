@@ -4,10 +4,16 @@
 #include <pthread.h>
 
 // Definición del filtro de realce de bordes (Edge Enhance)
-int edgeEnhanceFilter[3][3] = {
-    {-1, -1, -1},
-    {-1, 9, -1},
-    {-1, -1, -1}
+int simplifiedSobelFilter[3][3] = {
+    {-1, 0, 1},
+    {-2, 0, 2},
+    {-1, 0, 1}
+};
+
+int simpleEdgeEnhanceFilter[3][3] = {
+    {0, -1, 0},
+    {-1, 4, -1},
+    {0, -1, 0}
 };
 
 //Gaussiano!
