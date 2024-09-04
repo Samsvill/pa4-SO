@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         perror("Error al abrir el archivo de imagen de salida");
         return 1;
     }
-    writeImage(outputFile, imageIn);
+    writeImage("output.bmp", imageIn);
     fclose(outputFile);
 
     // Guardar la imagen resultante
