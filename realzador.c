@@ -131,30 +131,41 @@ int main(int argc, char *argv[])
     }
 
     // Crear y lanzar los hilos para procesar la imagen en paralelo
-    pthread_t threads[numThreads];
-    ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = imageIn->header.height_px / numThreads;
+    //pthread_t threads[numThreads];
+    //ThreadArgs threadArgs[numThreads];
+    //int rowsPerThread = imageIn->header.height_px / numThreads;
+//
+    //for (int i = 0; i < numThreads; i++)
+    //{
+    //    threadArgs[i].startRow = i * rowsPerThread;
+    //    threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
+    //    threadArgs[i].imageIn = imageIn;
+    //    threadArgs[i].imageOut = imageOut;
+    //    pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
+    //}
+//
+    //// Esperar a que todos los hilos terminen
+    //for (int i = 0; i < numThreads; i++)
+    //{
+    //    pthread_join(threads[i], NULL);
+    //}
 
-    for (int i = 0; i < numThreads; i++)
+    //Guardar la misma imagen que se recibe para probar que se guardan los valores correctos
+    FILE *outputFile = fopen("output.bmp", "wb");
+    if (outputFile == NULL)
     {
-        threadArgs[i].startRow = i * rowsPerThread;
-        threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
-        threadArgs[i].imageIn = imageIn;
-        threadArgs[i].imageOut = imageOut;
-        pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
+        perror("Error al abrir el archivo de imagen de salida");
+        return 1;
     }
-
-    // Esperar a que todos los hilos terminen
-    for (int i = 0; i < numThreads; i++)
-    {
-        pthread_join(threads[i], NULL);
-    }
+    writeBMPImage(outputFile, imageIn);
+    fclose(outputFile);
 
     // Guardar la imagen resultante
-    char outputFile[] = "output_enhanced.bmp";
-    writeImage(outputFile, imageOut);
+    //char outputFile[] = "output_enhanced.bmp";
+    //writeImage(outputFile, imageOut);
 
-    printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
+    printf("imagen original guardada en: %s\n", "output.bmp");
+    //printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
 
     // Liberar la memoria
     freeImage(imageIn);
