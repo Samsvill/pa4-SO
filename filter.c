@@ -10,11 +10,11 @@ int edgeEnhanceFilter[3][3] = {
     {-1, -1, -1}
 };
 
-
+//Gaussiano!
 int blurFilter[3][3] = {
-    {1, 1, 1},
-    {1, 9, 1},
-    {1, 1, 1}
+    {1, 2, 1},
+    {2, 4, 2},
+    {1, 2, 1}
 };
 
 int sharpenFilter[3][3] = {
@@ -30,7 +30,18 @@ void *applyFilter(void *args) {
     int endRow = tArgs->endRow;
     BMP_Image *imageIn = tArgs->imageIn;
     BMP_Image *imageOut = tArgs->imageOut;
-    int (*filter)[3] = tArgs->filter;  // Filtro que se aplicará
+    int (*filter)[3] = tArgs->filter;
+
+    // Sumar los valores del filtro para normalización
+    int filterSum = 0;
+    for (int x = 0; x < 3; x++) {
+        for (int y = 0; y < 3; y++) {
+            filterSum += filter[x][y];
+        }
+    }
+
+    // Evitar divisiones por 0 si el filtro tiene sumas nulas
+    int needsNormalization = (filterSum != 0);  // Solo normalizamos si el filtro lo requiere
 
     for (int row = startRow; row < endRow; row++) {
         for (int col = 0; col < imageIn->header.width_px; col++) {
@@ -52,7 +63,14 @@ void *applyFilter(void *args) {
                 }
             }
 
-            // Normalizar el valor de los píxeles
+            // Normalizar solo si es necesario
+            if (needsNormalization) {
+                sumBlue /= filterSum;
+                sumGreen /= filterSum;
+                sumRed /= filterSum;
+            }
+
+            // Limitar los valores entre 0 y 255
             imageOut->pixels[row][col].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
             imageOut->pixels[row][col].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
             imageOut->pixels[row][col].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
@@ -61,3 +79,5 @@ void *applyFilter(void *args) {
     }
     pthread_exit(NULL);
 }
+
+
