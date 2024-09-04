@@ -103,11 +103,12 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
 
   // Escribir el encabezado en el archivo de destino
   fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
+  
 
 
   // Escribir datos de imagen fila por fila
   for (int i = 0; i < dataImage->norm_height; i++) {
-    if (dataImage->pixels[i] == NULL){
+    if (dataImage->pixels[i] == NULL || fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile) != dataImage->header.width_px) {
       printError(MEMORY_ERROR);
       exit(EXIT_FAILURE);
     }
