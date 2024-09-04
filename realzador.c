@@ -144,11 +144,12 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numThreads; i++)
     {
         threadArgs[i].startRow = i * rowsPerThread;
-        threadArgs[i].endRow = threadArgs[i].startRow + rowsPerThread + (i < remainingRows ? 1 : 0);
+        threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
+        
         printf("Hilo %d: Procesando desde fila %d hasta fila %d\n", i, threadArgs[i].startRow, threadArgs[i].endRow);
+        pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
     }
 
     // Esperar a que todos los hilos terminen
