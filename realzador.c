@@ -156,8 +156,8 @@ int main(int argc, char *argv[])
     {
         pthread_join(threads[i], NULL);
     }
-    
-     Guardar la imagen resultante
+
+    //Guardar la imagen resultante
     char outputFile[] = "output_enhanced.bmp";
     writeImage(outputFile, imageOut);
 
