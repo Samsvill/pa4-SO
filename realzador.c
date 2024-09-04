@@ -64,10 +64,14 @@ void *applyEdgeEnhance(void *args)
             }
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
-            imageOut->pixels[row][col].blue = (sumBlue / FILTER_SIZE);
-            imageOut->pixels[row][col].green = (sumGreen / FILTER_SIZE);
-            imageOut->pixels[row][col].red = (sumRed / FILTER_SIZE);
-            imageOut->pixels[row][col].alpha = (255);
+            if (row >= 0 && row < abs(imageOut->norm_height) && col >= 0 && col < imageOut->header.width_px) {
+                imageOut->pixels[row][col].blue = sumBlue / FILTER_SIZE;
+                imageOut->pixels[row][col].green = sumGreen / FILTER_SIZE;
+                imageOut->pixels[row][col].red = sumRed / FILTER_SIZE;
+                imageOut->pixels[row][col].alpha = sumAlpha / FILTER_SIZE;
+            } else {
+                printf("Acceso fuera de los límites: Fila %d, Columna %d\n", row, col);
+            }
         }
     }
     pthread_exit(NULL);
