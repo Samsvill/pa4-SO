@@ -72,7 +72,7 @@ void *applyEdgeEnhance(void *args)
             imageOut->pixels[row][col].alpha = (uint8_t)(sumAlpha / 9);
 
             // Imprimir los valores procesados
-            printf("valores originales: %d, %d, %d\n", image->pixels[row][col].red, image->pixels[row][col].green, image->pixels[row][col].blue);
+            printf("valores originales: %d, %d, %d\n", imageIn->pixels[row][col].red, imageIn->pixels[row][col].green, imageIn->pixels[row][col].blue);
             printf("valores procesados: %d, %d, %d\n", imageOut->pixels[row][col].red, imageOut->pixels[row][col].green, imageOut->pixels[row][col].blue);
         }
     }
