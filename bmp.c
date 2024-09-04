@@ -135,10 +135,16 @@ void freeImage(BMP_Image* image) {
 
   // Se libera la memoria para cada fila de píxeles
   for (int i = 0; i < image->norm_height; i++) {
-    free(image->pixels[i]);
+    if (image->pixels[i] != NULL) {
+      free(image->pixels[i]);
+      image->pixels[i] = NULL;  // Evita liberar nuevamente
+    }
   }
 
-  free(image->pixels);
+  if (image->pixels != NULL) {
+    free(image->pixels);
+    image->pixels = NULL;
+  }
 
   // Se libera memoria para BMP_Image
   free(image);
