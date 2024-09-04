@@ -112,8 +112,6 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
       printError(MEMORY_ERROR);
       exit(EXIT_FAILURE);
     }
-    fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
-    
     // imprimir los valores de los píxeles escritos
     printf("Write Image\n");
     for (int j = 0; j < dataImage->header.width_px; j++) {
