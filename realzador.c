@@ -66,20 +66,10 @@ void *applyEdgeEnhance(void *args)
             }
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
-            int blueValue = sumBlue / 9;
-int greenValue = sumGreen / 9;
-int redValue = sumRed / 9;
-int alphaValue = sumAlpha / 9;
-
-blueValue = (blueValue > 255) ? 255 : (blueValue < 0) ? 0 : blueValue;
-greenValue = (greenValue > 255) ? 255 : (greenValue < 0) ? 0 : greenValue;
-redValue = (redValue > 255) ? 255 : (redValue < 0) ? 0 : redValue;
-alphaValue = (alphaValue > 255) ? 255 : (alphaValue < 0) ? 0 : alphaValue;
-
-imageOut->pixels[row][col].blue = 200;
-imageOut->pixels[row][col].green = (uint8_t)greenValue;
-imageOut->pixels[row][col].red = (uint8_t)redValue;
-imageOut->pixels[row][col].alpha = (uint8_t)alphaValue;
+            imageOut->pixels[row][col].blue = (uint8_t)(sumBlue);
+            imageOut->pixels[row][col].green = (uint8_t)(sumGreen);
+            imageOut->pixels[row][col].red = (uint8_t)(sumRed);
+            imageOut->pixels[row][col].alpha = (uint8_t)(sumAlpha);
 
             // Imprimir los valores procesados
             printf("valores originales: %d, %d, %d\n", imageIn->pixels[row][col].red, imageIn->pixels[row][col].green, imageIn->pixels[row][col].blue);
