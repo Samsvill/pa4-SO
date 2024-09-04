@@ -1,97 +1,129 @@
-// realzador.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "bmp.h"
+#include "filter.h"
 
-#define SHM_KEY 12345
-#define MAX_IMAGE_SIZE 1024*1024*10
-#define KERNEL_SIZE 3
+#define SHM_SIZE sizeof(BMP_Image)
 
+// Estructura para pasar los argumentos a cada hilo
 typedef struct {
-    BmpImage *image;
-    int start_row;
-    int num_rows;
-} EdgeArgs;
+    int startRow;
+    int endRow;
+    BMP_Image *imageIn;
+    BMP_Image *imageOut;
+} ThreadArgs;
 
-int edge_kernel[KERNEL_SIZE][KERNEL_SIZE] = {
+// Filtro de realce de bordes
+int edgeEnhanceFilter[3][3] = {
     {-1, -1, -1},
-    {-1,  8, -1},
+    {-1,  9, -1},
     {-1, -1, -1}
 };
 
-void *edge_section(void *arg) {
-    EdgeArgs *args = (EdgeArgs *)arg;
-    int width = args->image->header.width_px;
-    int height = args->image->header.height_px;
-    Pixel *pixels = args->image->pixels;
+// Función que aplica el filtro de realce a una parte de la imagen
+void *applyEdgeEnhance(void *args) {
+    ThreadArgs *tArgs = (ThreadArgs *)args;
+    int startRow = tArgs->startRow;
+    int endRow = tArgs->endRow;
+    BMP_Image *imageIn = tArgs->imageIn;
+    BMP_Image *imageOut = tArgs->imageOut;
 
-    // Aplicar convolución del kernel de detección de bordes
-    for (int i = args->start_row; i < args->start_row + args->num_rows; i++) {
-        for (int j = 1; j < width - 1; j++) {
-            int sum_r = 0, sum_g = 0, sum_b = 0;
-            for (int ki = 0; ki < KERNEL_SIZE; ki++) {
-                for (int kj = 0; kj < KERNEL_SIZE; kj++) {
-                    Pixel *p = &pixels[(i + ki - 1) * width + (j + kj - 1)];
-                    sum_r += p->red * edge_kernel[ki][kj];
-                    sum_g += p->green * edge_kernel[ki][kj];
-                    sum_b += p->blue * edge_kernel[ki][kj];
+    for (int row = startRow; row < endRow; row++) {
+        for (int col = 0; col < imageIn->header.width_px; col++) {
+            int sumBlue = 0, sumGreen = 0, sumRed = 0;
+
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    int newRow = row + x;
+                    int newCol = col + y;
+
+                    // Asegurarse de que estamos dentro de los límites de la imagen
+                    if (newRow >= 0 && newRow < imageIn->header.height_px && newCol >= 0 && newCol < imageIn->header.width_px) {
+                        Pixel *p = &imageIn->pixels[newRow][newCol];
+                        sumBlue += edgeEnhanceFilter[x + 1][y + 1] * p->blue;
+                        sumGreen += edgeEnhanceFilter[x + 1][y + 1] * p->green;
+                        sumRed += edgeEnhanceFilter[x + 1][y + 1] * p->red;
+                    }
                 }
             }
-            Pixel *p = &pixels[i * width + j];
-            p->red = sum_r;
-            p->green = sum_g;
-            p->blue = sum_b;
+
+            // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
+            Pixel *pOut = &imageOut->pixels[row][col];
+            pOut->blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
+            pOut->green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
+            pOut->red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
+            pOut->alpha = 255;  // Asignar valor alfa como opaco
         }
     }
     return NULL;
 }
 
+// Función principal
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Uso: %s <número de hilos>\n", argv[0]);
+    if (argc != 3) {
+        printf("Uso: %s <ruta_imagen> <número_hilos>\n", argv[0]);
         return 1;
     }
-    int num_threads = atoi(argv[1]);
 
-    int shm_id;
-    BmpImage *shm_ptr;
+    // Cargar la imagen desde el archivo
+    char *inputFile = argv[1];
+    int numThreads = atoi(argv[2]);
 
-    shm_id = shmget(SHM_KEY, MAX_IMAGE_SIZE, 0666);
-    if (shm_id < 0) {
-        perror("shmget");
-        exit(1);
+    FILE *imageFile = fopen(inputFile, "rb");
+    if (imageFile == NULL) {
+        perror("No se pudo abrir el archivo de imagen");
+        return 1;
     }
 
-    shm_ptr = (BmpImage *)shmat(shm_id, NULL, 0);
-    if (shm_ptr == (BmpImage *) -1) {
-        perror("shmat");
-        exit(1);
+    BMP_Image *imageIn = createBMPImage(imageFile);
+    if (imageIn == NULL) {
+        perror("Error al cargar la imagen");
+        fclose(imageFile);
+        return 1;
+    }
+    fclose(imageFile);
+
+    // Crear la imagen de salida con las mismas dimensiones
+    BMP_Image *imageOut = createBMPImage(NULL);
+    imageOut->header = imageIn->header;
+    imageOut->norm_height = imageIn->norm_height;
+    imageOut->bytes_per_pixel = imageIn->bytes_per_pixel;
+    imageOut->pixels = malloc(imageOut->norm_height * sizeof(Pixel *));
+    for (int i = 0; i < imageOut->norm_height; i++) {
+        imageOut->pixels[i] = malloc(imageOut->header.width_px * sizeof(Pixel));
     }
 
-    int width = shm_ptr->header.width_px;
-    int height = shm_ptr->header.height_px;
-    int half_height = height / 2;
+    // Crear y lanzar los hilos para procesar la imagen en paralelo
+    pthread_t threads[numThreads];
+    ThreadArgs threadArgs[numThreads];
+    int rowsPerThread = imageIn->header.height_px / numThreads;
 
-    pthread_t threads[num_threads];
-    EdgeArgs args[num_threads];
-    int rows_per_thread = half_height / num_threads;
-
-    for (int i = 0; i < num_threads; i++) {
-        args[i].image = shm_ptr;
-        args[i].start_row = half_height + i * rows_per_thread;
-        args[i].num_rows = rows_per_thread;
-        pthread_create(&threads[i], NULL, edge_section, &args[i]);
+    for (int i = 0; i < numThreads; i++) {
+        threadArgs[i].startRow = i * rowsPerThread;
+        threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->header.height_px : threadArgs[i].startRow + rowsPerThread;
+        threadArgs[i].imageIn = imageIn;
+        threadArgs[i].imageOut = imageOut;
+        pthread_create(&threads[i], NULL, applyEdgeEnhance, &threadArgs[i]);
     }
 
-    for (int i = 0; i < num_threads; i++) {
+    // Esperar a que todos los hilos terminen
+    for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
     }
 
-    printf("Detección de bordes completada en la segunda mitad.\n");
+    // Guardar la imagen resultante
+    char outputFile[] = "output_enhanced.bmp";
+    writeImage(outputFile, imageOut);
+
+    printf("Imagen con filtro de realce guardada en: %s\n", outputFile);
+
+    // Liberar la memoria
+    freeImage(imageIn);
+    freeImage(imageOut);
 
     return 0;
 }
-
