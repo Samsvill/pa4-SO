@@ -33,15 +33,16 @@ void *applyEdgeEnhance(void *args)
     // Filtro de realce de bordes
     int edgeEnhanceFilter[3][3] = {
         {1, 1, 1},
-        {1, FILTER_SIZE, 1},
+        {1, 1, 1},
         {1, 1, 1}};
     
-    printf("Ancho de la imagen: %d\n", imageIn->header.width_px);
+    printf("filtro: Ancho de la imagen: %d\n", imageIn->header.width_px);
     for (int row = startRow; row < endRow; row++)
     {
-        printf("imagein->header.width_px: %d\n", imageIn->header.width_px);
+        printf("Fila %d\n", row);
         for (int col = 0; col < imageIn->header.width_px; col++)
         {
+            printf("Columna %d\n", col);
             int sumBlue = 0, sumGreen = 0, sumRed = 0, sumAlpha = 0;
 
             for (int x = -1; x <= 1; x++)
@@ -65,10 +66,10 @@ void *applyEdgeEnhance(void *args)
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
             Pixel *pOut = &imageOut->pixels[row][col];
-            pOut->blue = sumBlue / FILTER_SIZE;
-            pOut->green = sumGreen / FILTER_SIZE;
-            pOut->red = sumRed / FILTER_SIZE;
-            pOut->alpha = sumAlpha / FILTER_SIZE;
+            pOut->blue = sumBlue / 9;
+            pOut->green = sumGreen / 9;
+            pOut->red = sumRed / 9;
+            pOut->alpha = sumAlpha / 9;
 
             // Imprimir los valores procesados
             printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", row, col,
