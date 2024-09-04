@@ -57,25 +57,23 @@ void *applyEdgeEnhance(void *args)
                     if (newRow >= 0 && newRow < imageIn->header.height_px && 
                         newCol >= 0 && newCol < imageIn->header.width_px)
                     {
-                        Pixel *p = &imageIn->pixels[newRow][newCol];
-                        sumBlue += edgeEnhanceFilter[x + 1][y + 1] * p->blue;
-                        sumGreen += edgeEnhanceFilter[x + 1][y + 1] * p->green;
-                        sumRed += edgeEnhanceFilter[x + 1][y + 1] * p->red;
-                        sumAlpha += edgeEnhanceFilter[x + 1][y + 1] * p->alpha;
+                        sumBlue += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].blue;
+                        sumGreen += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].green;
+                        sumRed += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].red;
+                        sumAlpha += edgeEnhanceFilter[x + 1][y + 1] * image->pixels[newRow][newCol].alpha;
                     }
                 }
             }
 
             // Normalizar el valor de los píxeles y asegurarse de que estén entre 0 y 255
-            Pixel *pOut = &imageOut->pixels[row][col];
-            pOut->blue = sumBlue / 9;
-            pOut->green = sumGreen / 9;
-            pOut->red = sumRed / 9;
-            pOut->alpha = sumAlpha / 9;
+            imageOut->pixels[row][col].blue = (uint8_t)(sumBlue / 9);
+            imageOut->pixels[row][col].green = (uint8_t)(sumGreen / 9);
+            imageOut->pixels[row][col].red = (uint8_t)(sumRed / 9);
+            imageOut->pixels[row][col].alpha = (uint8_t)(sumAlpha / 9);
 
             // Imprimir los valores procesados
-            printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", row, col,
-                   pOut->red, pOut->green, pOut->blue);
+            printf("valores originales: %d, %d, %d\n", image->pixels[row][col].red, image->pixels[row][col].green, image->pixels[row][col].blue);
+            printf("valores procesados: %d, %d, %d\n", imageOut->pixels[row][col].red, imageOut->pixels[row][col].green, imageOut->pixels[row][col].blue);
         }
     }
     pthread_exit(NULL);
