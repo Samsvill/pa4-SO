@@ -100,8 +100,7 @@ int main(int argc, char *argv[])
     BMP_Image *imageIn = createBMPImage(imageFile);
     if (imageIn == NULL)
     {
-        fprintf(stderr, "Error al cargar la imagen\n");
-        fclose(imageFile);
+        printError(FILE_ERROR);
         return 1;
     }
     fclose(imageFile);
@@ -110,23 +109,15 @@ int main(int argc, char *argv[])
     BMP_Image *imageOut = (BMP_Image *)malloc(sizeof(BMP_Image));
     if (imageOut == NULL)
     {
-        fprintf(stderr, "Error al asignar memoria para la imagen de salida\n");
-        freeImage(imageIn);
-        return 1;
+        printError(MEMORY_ERROR);
+        exit(EXIT_FAILURE);
     }
-    printf("memoria asignada: %d\n", sizeof(BMP_Image));
-    imageOut->header = imageIn->header;
+    
     imageOut->header.size = imageIn->header.width_px * imageIn->header.height_px * sizeof(Pixel) + sizeof(imageIn->header);
+    imageOut->header.width_px = imageIn->header.width_px;
     imageOut->norm_height = abs(imageIn->header.height_px);
     imageOut->bytes_per_pixel = imageIn->header.bits_per_pixel/8;
     imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
-
-    printf("memoria asignada para la imagen original: %d\n", sizeof(Pixel *) * imageIn->norm_height);
-    printf("memoria que creemos que será para la imagen de salida: %d\n", sizeof(Pixel *) * imageOut->norm_height);
-    printf("imagein\n");
-    printBMPImage(imageIn);
-    printf("imageout\n");
-    printBMPImage(imageOut);
 
     if (imageOut->pixels == NULL)
     {
@@ -144,7 +135,6 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
-    printf("memoria asignada para la imagen de salida: %d\n", sizeof(Pixel) * imageOut->header.width_px * imageOut->norm_height);
 
     //Crear y lanzar los hilos para procesar la imagen en paralelo
     pthread_t threads[numThreads];
