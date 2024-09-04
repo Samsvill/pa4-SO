@@ -19,11 +19,7 @@ typedef struct
     BMP_Image *imageOut;
 } ThreadArgs;
 
-// Filtro de realce de bordes
-int edgeEnhanceFilter[3][3] = {
-    {-1, -1, -1},
-    {-1, FILTER_SIZE, -1},
-    {-1, -1, -1}};
+
 
 // Función que aplica el filtro de realce a una parte de la imagen
 void *applyEdgeEnhance(void *args)
@@ -34,6 +30,11 @@ void *applyEdgeEnhance(void *args)
     BMP_Image *imageIn = tArgs->imageIn;
     BMP_Image *imageOut = tArgs->imageOut;
 
+    // Filtro de realce de bordes
+    int edgeEnhanceFilter[3][3] = {
+        {1, 1, 1},
+        {1, FILTER_SIZE, 1},
+        {1, 1, 1}};
     
     printf("Ancho de la imagen: %d\n", imageIn->header.width_px);
     for (int row = startRow; row < endRow; row++)
@@ -113,8 +114,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    imageOut->header.size = imageIn->header.width_px * imageIn->header.height_px * sizeof(Pixel) + sizeof(imageIn->header);
-    imageOut->header.width_px = imageIn->header.width_px;
+    imageOut->header = imageIn->header;
     imageOut->norm_height = abs(imageIn->header.height_px);
     imageOut->bytes_per_pixel = imageIn->header.bits_per_pixel/8;
     imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
