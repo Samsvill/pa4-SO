@@ -59,27 +59,29 @@ BMP_Image* createBMPImage(FILE *fptr) {
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
+    //MEMORIA PARA PIXELS
     image->pixels = (Pixel**)malloc(image->norm_height * sizeof(Pixel*));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
-    
+    //MEMORIA PARA CADA FILA DE PIXELS
     for (int i = 0; i < image->norm_height; i++) {
         image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
         if (image->pixels[i] == NULL) {
             printError(MEMORY_ERROR);
             exit(EXIT_FAILURE);
         }
+        fread(image->pixels[i], image->bytes_per_pixel, image->header.width_px, fptr);
 }
-
+    
     printf("Fila %d, Columna %d - R: %d, G: %d, B: %d\n", 899, 599, 
           image->pixels[899][599].red, 
           image->pixels[899][599].green, 
           image->pixels[899][599].blue);
 
-    readImage(fptr, image);
-    
+    //readImage(fptr, image);
+
     return image;
     }
 
