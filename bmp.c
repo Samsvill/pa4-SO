@@ -107,10 +107,14 @@ void writeImage(char* destFileName, BMP_Image* dataImage) {
   fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
 
   // Calcular el tamaño del padding
-  int paddingSize = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
+  int paddingSize = (4 - (dataImage->header.width_px * sizeof(Pixel)) % 4) % 4;
 
   // Escribir datos de imagen fila por fila con padding
   for (int i = 0; i < dataImage->norm_height; i++) {
+    if (dataImage->pixels[i] == NULL){
+      printError(MEMORY_ERROR);
+      exit(EXIT_FAILURE);
+    }
     fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
     for (int j = 0; j < paddingSize; j++) {
       fwrite("\0\0\0", paddingSize, 1, destFile);
