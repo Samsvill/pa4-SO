@@ -10,11 +10,18 @@ int simplifiedSobelFilter[3][3] = {
     {-1, 0, 1}
 };
 
+int sobelFilter[3][3] = {
+    {1, 0, -1},
+    {2, 0, -2},
+    {1, 0, -1}
+};
+
 int simpleEdgeEnhanceFilter[3][3] = {
     {0, -1, 0},
     {-1, 4, -1},
     {0, -1, 0}
 };
+
 
 //Gaussiano!
 int blurFilter[3][3] = {

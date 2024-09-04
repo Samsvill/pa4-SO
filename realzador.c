@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? abs(imageIn->header.height_px) : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = simplifiedSobelFilter;
+        threadArgs[i].filter = sobelFilter;
         //printf("Hilo %d: Procesando desde fila %d hasta fila %d\n", i, threadArgs[i].startRow, threadArgs[i].endRow);
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }

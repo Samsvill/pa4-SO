@@ -5,6 +5,7 @@
 
 // Declaraciones de filtros predefinidos
 extern int simplifiedSobelFilter[3][3];
+extern int sobelFilter[3][3];
 extern int simpleEdgeEnhanceFilter[3][3];
 extern int blurFilter[3][3];
 extern int sharpenFilter[3][3];
