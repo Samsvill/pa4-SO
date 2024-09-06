@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     fclose(imageFile);
 
     // Calcular el tamaño de la memoria compartida
-    int imageSize = sizeof(BMP_Image) + abs(image->norm_height) * image->header.width_px * sizeof(Pixel);
+    int imageSize = sizeof(Pixel) * image->norm_height * image->header.width_px;
     int shm_size = sizeof(SharedData) + imageSize;  // Incluyendo SharedData y los píxeles
 
     // Crear o acceder a la memoria compartida
@@ -75,16 +75,14 @@ int main(int argc, char *argv[]) {
     printf("Memoria compartida creada/accedida con ID %d\n", shmid);
     printf("Compartiendo imagen...\n");
 
-    // Copiar la imagen en la memoria compartida
-    // Primero, copiar el encabezado y el doble puntero (no los datos aún)
+    // Copiar el encabezado y parámetros de la imagen
     memcpy(&(shared_data->image), image, sizeof(BMP_Image));
 
-    // Copiar los píxeles en un bloque contiguo
+    // Copiar los píxeles en un bloque contiguo de memoria compartida
     shared_data->pixels_data = (Pixel *)(shared_data + 1);  // Espacio después de SharedData
-    memcpy(shared_data->pixels_data, image->pixels_data, image->norm_height * image->header.width_px * sizeof(Pixel));
+    memcpy(shared_data->pixels_data, image->pixels_data, imageSize);
 
-    // Asignar las filas a los punteros del doble puntero
-    shared_data->image.pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
+    // Asignar las filas a los punteros del doble puntero `pixels`
     for (int i = 0; i < image->norm_height; i++) {
         shared_data->image.pixels[i] = &shared_data->pixels_data[i * image->header.width_px];
     }

@@ -39,16 +39,20 @@ int main(int argc, char *argv[]) {
     // Esperar a que ambas mitades estén procesadas
     pthread_mutex_lock(&(shared_data->mutex));
 
-    //while (!shared_data->half1_done) {
-    //    pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Espera a que la mitad 1 esté lista
-    //}
-    //while (!shared_data->half2_done) {
-    //    pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));  // Espera a que la mitad 2 esté lista
-    //}
-    
+    // Esperar a que la mitad 1 esté lista
+    while (!shared_data->half1_done) {
+        pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 1
+    }
+
+    // Esperar a que la mitad 2 esté lista
+    while (!shared_data->half2_done) {
+        pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 2
+    }
+
     // Ambas mitades están listas, ahora podemos combinar la imagen
+    printf("Ambas mitades procesadas. Escribiendo imagen completa en: %s\n", argv[1]);
     writeImage(argv[1], &(shared_data->image));
-    
+
     pthread_mutex_unlock(&(shared_data->mutex));
 
     // Desconectar de la memoria compartida

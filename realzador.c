@@ -47,11 +47,12 @@ int main(int argc, char *argv[]) {
     BMP_Image *imageIn = &(shared_data->image);
     BMP_Image *imageOut = initializeImageOut(imageIn);
 
-    // Asegurar que `imageOut->pixels` apunte a la memoria adecuada (memoria contigua)
-    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
-    imageOut->pixels_data = (Pixel *)malloc(imageOut->norm_height * imageOut->header.width_px * sizeof(Pixel));
+    // En lugar de crear una nueva imagen de salida, usaremos directamente la memoria compartida para los píxeles de salida.
+    BMP_Image *imageOut = &(shared_data->image);  // Usamos la misma imagen para modificarla
+
+    // Inicializar los punteros a las filas en la memoria compartida
     for (int i = 0; i < imageOut->norm_height; i++) {
-        imageOut->pixels[i] = &imageOut->pixels_data[i * imageOut->header.width_px];
+        imageOut->pixels[i] = &shared_data->pixels_data[i * imageOut->header.width_px];
     }
 
     // Crear hilos para aplicar el filtro
@@ -85,11 +86,6 @@ int main(int argc, char *argv[]) {
     printf("Mutex bloqueado\n");
     printf("Escribiendo en la memoria compartida...\n");
 
-    // Copiar los píxeles procesados de nuevo a la memoria compartida
-    memcpy(&shared_data->pixels_data[startRow * imageIn->header.width_px],
-           &imageOut->pixels_data[startRow * imageIn->header.width_px],
-           (endRow - startRow) * imageIn->header.width_px * sizeof(Pixel));
-    printf("Píxeles escritos en la memoria compartida\n");
     // Marcar como procesado y enviar la señal correspondiente
     printf("Marcando como procesado y enviando señal...\n");
     if (strcmp(argv[1], "half1") == 0) {
@@ -106,11 +102,6 @@ int main(int argc, char *argv[]) {
     printf("Mutex desbloqueado\n");
     // Desconectar de la memoria compartida
     shmdt(shared_data);
-
-    // Liberar la imagen de salida
-    free(imageOut->pixels);
-    free(imageOut->pixels_data);
-    free(imageOut);
 
     return 0;
 }
