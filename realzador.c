@@ -34,9 +34,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Bloquear el mutex antes de acceder a la imagen
-    pthread_mutex_lock(&(shared_data->mutex));
-
     int startRow, endRow;
     if (strcmp(argv[1], "half1") == 0) {
         startRow = 0;
