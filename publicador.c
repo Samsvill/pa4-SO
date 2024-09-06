@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
     int shm_size = sizeof(pthread_mutex_t) + imageSize;
 
     // Crear o acceder a la memoria compartida
+    printf("Creando/accediendo a la memoria compartida...\n");
+    printf("Argumentos: SHM_KEY=%d, tamaño=%d\n", SHM_KEY, shm_size);
     int shmid = shmget(SHM_KEY, shm_size, 0666 | IPC_CREAT);
     if (shmid < 0) {
         perror("Error al crear/acceder a la memoria compartida");
