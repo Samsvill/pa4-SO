@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Generar la clave con ftok
-    key_t key = ftok(PATHNAME, SHM_KEY);
+    key_t key = ftok(PATH_NAME, SHM_KEY);
     if (key == -1) {
         perror("Error al generar la clave con ftok");
         return 1;
