@@ -101,6 +101,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
 
     // Escribir los píxeles directamente desde `pixels_data`
     for (int i = 0; i < dataImage->norm_height; i++) {
+        printf("Escribiendo fila %d de %d píxeles\n", i, dataImage->header.width_px);
         if (fwrite(&dataImage->pixels_data[i * dataImage->header.width_px], 
                     dataImage->bytes_per_pixel, 
                     dataImage->header.width_px, 

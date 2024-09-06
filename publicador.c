@@ -86,10 +86,15 @@ int main(int argc, char *argv[]) {
         shared_data->image.pixels[i] = &shared_data->pixels[i * image->header.width_px];
     }
 
-    printf("Imagen compartida\n");
-
     // Liberar la imagen original (ya está copiada en la memoria compartida)
     freeImage(image);
+
+    // PRUEBA: Escribir la imagen directamente desde la memoria compartida a un archivo BMP
+    printf("Escribiendo la imagen copiada directamente desde la memoria compartida para verificar...\n");
+    writeImage("imagen_copiada.bmp", &(shared_data->image));
+    printf("Imagen copiada correctamente a 'imagen_copiada.bmp'\n");
+
+    // Después de esta prueba, el flujo sigue normalmente:
 
     // Crear un proceso hijo para lanzar el realzador
     pid_t pid_realzador = fork();
