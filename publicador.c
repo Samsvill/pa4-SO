@@ -78,13 +78,12 @@ int main(int argc, char *argv[]) {
     // Copiar el encabezado y parámetros de la imagen
     memcpy(&(shared_data->image), image, sizeof(BMP_Image));
 
-    // Copiar los píxeles en un bloque contiguo de memoria compartida
-    shared_data->pixels_data = (Pixel *)(shared_data + 1);  // Espacio después de SharedData
-    memcpy(shared_data->pixels_data, image->pixels_data, imageSize);
+    // Copiar los píxeles en el arreglo flexible `pixels[]` en la memoria compartida
+    memcpy(shared_data->pixels, image->pixels_data, imageSize);
 
     // Asignar las filas a los punteros del doble puntero `pixels`
     for (int i = 0; i < image->norm_height; i++) {
-        shared_data->image.pixels[i] = &shared_data->pixels_data[i * image->header.width_px];
+        shared_data->image.pixels[i] = &shared_data->pixels[i * image->header.width_px];
     }
 
     printf("Imagen compartida\n");
