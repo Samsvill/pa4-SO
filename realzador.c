@@ -60,7 +60,10 @@ int main(int argc, char *argv[]) {
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
         threadArgs[i].filter = (strcmp(argv[0], "./realzador") == 0) ? simplifiedSobelFilter : blurFilter;
+        printf("startRow: %d, endRow: %d\n", threadArgs[i].startRow, threadArgs[i].endRow);
+        printf("Creando hilo %d\n", i);
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
+        printf("Hilo %d creado\n", i);
     }
     printf("Hilos creados\n");
     printf("Esperando a que los hilos terminen...\n");
