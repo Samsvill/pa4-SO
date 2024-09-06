@@ -43,11 +43,12 @@ int main(int argc, char *argv[]) {
     pthread_mutex_lock(&(shared_data->mutex));
     printf("mutex lock\n");
     // Esperar a que la mitad 1 esté lista
-    printf("Esperando a que la mitad 1 esté lista\n");
+    printf("Esperando que la mitad 1 esté lista...\n");
     while (!shared_data->half1_done) {
-        pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 1
+        printf("Todavía esperando la mitad 1...\n");
+        pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));
     }
-    printf("Mitad 1 procesada\n");
+    printf("Mitad 1 lista.\n");
     printf("Esperando a que la mitad 2 esté lista\n");
     // Esperar a que la mitad 2 esté lista
     while (!shared_data->half2_done) {
