@@ -108,11 +108,13 @@ int main(int argc, char *argv[]) {
     waitpid(pid_realzador, NULL, 0);
     printf("Realzador terminó,esperando desenfocador\n");
     waitpid(pid_desenfocador, NULL, 0);
-    printf("Realzador terminó\n");
+    printf("Desenfocador terminó\n");
 
     // Después de que ambos hayan terminado, lanzar el combinador
+    printf("Lanzando combinador");
     pid_t pid_combinador = fork();
     if (pid_combinador == 0) {
+        printf("dentro del hilo del combinador");
         char *args[] = {"./combinador", "output.bmp", NULL};
         execvp(args[0], args);
         perror("Error al ejecutar el combinador");
@@ -121,7 +123,7 @@ int main(int argc, char *argv[]) {
 
     // Esperar a que el combinador termine
     waitpid(pid_combinador, NULL, 0);
-
+    printf("combinador terminó")
     // Destruir el mutex
     pthread_mutex_destroy(&(shared_data->mutex));
     // Desconectar y liberar la memoria compartida

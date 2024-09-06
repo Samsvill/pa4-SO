@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Generar la clave con ftok
-    key_t key = ftok(PATH_NAME, SHM_KEY);
+    key_t key = ftok(PATHNAME, SHM_KEY);
     if (key == -1) {
         perror("Error al generar la clave con ftok");
         return 1;
@@ -39,12 +39,12 @@ int main(int argc, char *argv[]) {
     // Esperar a que ambas mitades estén procesadas
     pthread_mutex_lock(&(shared_data->mutex));
 
-    while (!shared_data->half1_done) {
-        pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Espera a que la mitad 1 esté lista
-    }
-    while (!shared_data->half2_done) {
-        pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));  // Espera a que la mitad 2 esté lista
-    }
+    //while (!shared_data->half1_done) {
+    //    pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Espera a que la mitad 1 esté lista
+    //}
+    //while (!shared_data->half2_done) {
+    //    pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));  // Espera a que la mitad 2 esté lista
+    //}
     
     // Ambas mitades están listas, ahora podemos combinar la imagen
     writeImage(argv[1], &(shared_data->image));
