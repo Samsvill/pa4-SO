@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     // Crear hilos para aplicar el filtro
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = endRow - startRow / numThreads;
+    int rowsPerThread = (endRow - startRow) / numThreads;
 
     for (int i = 0; i < numThreads; i++) {
         threadArgs[i].startRow = startRow + i * rowsPerThread;
