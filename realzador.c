@@ -34,7 +34,8 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Memoria compartida accedida\n");
-    printf("norm_height %d",shared_data->image.norm_height);
+    printf("norm_height %d", shared_data->image.norm_height);
+
     int startRow, endRow;
     if (strcmp(argv[1], "half1") == 0) {
         startRow = 0;
@@ -45,14 +46,13 @@ int main(int argc, char *argv[]) {
     }
 
     BMP_Image *imageIn = &(shared_data->image);
-    BMP_Image *imageOut = initializeImageOut(imageIn);
 
-    // En lugar de crear una nueva imagen de salida, usaremos directamente la memoria compartida para los píxeles de salida.
-    BMP_Image *imageOut = &(shared_data->image);  // Usamos la misma imagen para modificarla
+    // Usamos directamente la imagen en la memoria compartida para modificarla.
+    BMP_Image *imageOut = &(shared_data->image);  
 
     // Inicializar los punteros a las filas en la memoria compartida
     for (int i = 0; i < imageOut->norm_height; i++) {
-        imageOut->pixels[i] = &shared_data->pixels_data[i * imageOut->header.width_px];
+        imageOut->pixels[i] = &shared_data->pixels[i * imageOut->header.width_px];
     }
 
     // Crear hilos para aplicar el filtro
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
     }
     printf("Hilos creados\n");
     printf("Esperando a que los hilos terminen...\n");
+
     // Esperar a que todos los hilos terminen
     for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
@@ -84,7 +85,6 @@ int main(int argc, char *argv[]) {
     printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));
     printf("Mutex bloqueado\n");
-    printf("Escribiendo en la memoria compartida...\n");
 
     // Marcar como procesado y enviar la señal correspondiente
     printf("Marcando como procesado y enviando señal...\n");
@@ -96,10 +96,12 @@ int main(int argc, char *argv[]) {
         pthread_cond_signal(&(shared_data->cond_half2));
     }
     printf("Listo\n");
+
     // Desbloquear el mutex
     printf("Desbloqueando mutex...\n");
     pthread_mutex_unlock(&(shared_data->mutex));
     printf("Mutex desbloqueado\n");
+
     // Desconectar de la memoria compartida
     shmdt(shared_data);
 

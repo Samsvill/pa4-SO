@@ -51,6 +51,13 @@ int main(int argc, char *argv[]) {
 
     // Ambas mitades están listas, ahora podemos combinar la imagen
     printf("Ambas mitades procesadas. Escribiendo imagen completa en: %s\n", argv[1]);
+
+    // Inicializar los punteros `pixels` para que apunten correctamente a los píxeles en la memoria compartida
+    for (int i = 0; i < shared_data->image.norm_height; i++) {
+        shared_data->image.pixels[i] = &shared_data->pixels[i * shared_data->image.header.width_px];
+    }
+
+    // Escribir la imagen combinada en el archivo de salida
     writeImage(argv[1], &(shared_data->image));
 
     pthread_mutex_unlock(&(shared_data->mutex));
