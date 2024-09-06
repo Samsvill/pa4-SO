@@ -83,10 +83,33 @@ void *applyFilter(void *args) {
 
             // Limitar los valores entre 0 y 255 y escribir en la imagen de salida
             int pixelIndex = row * width + col;  // Cálculo del índice contiguo
-            imageOut->pixels[pixelIndex].blue = 255
+            imageOut->pixels[pixelIndex].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
             imageOut->pixels[pixelIndex].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
             imageOut->pixels[pixelIndex].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
             imageOut->pixels[pixelIndex].alpha = 255;  // Asumimos que siempre es opaco
+        }
+    }
+
+    pthread_exit(NULL);
+}
+
+// Función que aplica el filtro de identidad (la misma imagen) a una parte de la imagen (en paralelo)
+void *applyFilterIdentity(void *args) {
+    ThreadArgs *tArgs = (ThreadArgs *)args;
+    int startRow = tArgs->startRow;
+    int endRow = tArgs->endRow;
+    BMP_Image *imageIn = tArgs->imageIn;
+    BMP_Image *imageOut = tArgs->imageOut;
+
+    int width = imageIn->header.width_px;  // El ancho de la imagen
+
+    for (int row = startRow; row < endRow; row++) {
+        for (int col = 0; col < width; col++) {
+            // Cálculo del índice contiguo
+            int pixelIndex = row * width + col;
+
+            // Copiar directamente los valores de la imagen de entrada a la imagen de salida
+            imageOut->pixels[pixelIndex] = imageIn->pixels[pixelIndex];
         }
     }
 

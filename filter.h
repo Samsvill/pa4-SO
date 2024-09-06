@@ -12,6 +12,9 @@ extern int sharpenFilter[3][3];
 // Función para aplicar un filtro específico en un rango de filas
 void *applyFilter(void *args);
 
+// Funcion identidad
+void *applyFilterIdentity(void *args);
+
 // Estructura para pasar argumentos a los hilos
 typedef struct {
     int startRow;

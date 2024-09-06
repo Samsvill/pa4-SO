@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].filter = simplifiedSobelFilter;
         printf("startRow: %d, endRow: %d\n", threadArgs[i].startRow, threadArgs[i].endRow);
         printf("Creando hilo %d\n", i);
-        pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
+        pthread_create(&threads[i], NULL, applyFilterIdentity, &threadArgs[i]);
         printf("Hilo %d creado\n", i);
     }
     printf("Hilos creados\n");
