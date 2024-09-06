@@ -83,7 +83,7 @@ void *applyFilter(void *args) {
 
             // Limitar los valores entre 0 y 255 y escribir en la imagen de salida
             int pixelIndex = row * width + col;  // Cálculo del índice contiguo
-            imageOut->pixels[pixelIndex].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
+            imageOut->pixels[pixelIndex].blue = 255
             imageOut->pixels[pixelIndex].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
             imageOut->pixels[pixelIndex].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
             imageOut->pixels[pixelIndex].alpha = 255;  // Asumimos que siempre es opaco
