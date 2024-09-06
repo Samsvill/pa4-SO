@@ -12,7 +12,7 @@
 #define PATH_NAME "test.bmp"
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
+    if (argc != 5) {
         printf("Uso: %s <ruta_imagen> <ruta_output> <hilos_filtro1> <hilos_filtro2>\n", argv[0]);
         return 1;
     }
