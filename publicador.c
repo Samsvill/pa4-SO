@@ -9,6 +9,7 @@
 #include "bmp.h"
 
 #define SHM_KEY 1234  // Clave para la memoria compartida
+#define PATH_NAME "/tmp"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -35,8 +36,13 @@ int main(int argc, char *argv[]) {
 
     // Crear o acceder a la memoria compartida
     printf("Creando/accediendo a la memoria compartida...\n");
-    printf("Argumentos: SHM_KEY=%d, tamaño=%d\n", SHM_KEY, shm_size);
-    int shmid = shmget(SHM_KEY, shm_size, 0666 | IPC_CREAT);
+   
+    key_t key = ftok(PATH_NAME, SHM_KEY);  // Genera una clave única a partir de un archivo
+    if (key == -1) {
+        perror("Error al generar la clave con ftok");
+        exit(1);
+    }
+    int shmid = shmget(key, shm_size, 0666 | IPC_CREAT);
     if (shmid < 0) {
         perror("Error al crear/acceder a la memoria compartida");
         exit(1);

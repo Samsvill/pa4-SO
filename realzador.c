@@ -7,6 +7,7 @@
 #include "filter.h"
 
 #define SHM_KEY 1234  // Clave para la memoria compartida
+#define PATH_NAME "/tmp"
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -18,7 +19,8 @@ int main(int argc, char *argv[]) {
     char *outputFile = argv[1];  // Usar el archivo de salida que se pasa como argumento
 
     // Acceder a la memoria compartida (el publicador ya debería haber cargado la imagen)
-    int shmid = shmget(SHM_KEY, 0, 0666);
+    key_t key = ftok(PATH_NAME, SHM_KEY);
+    int shmid = shmget(key, 0, 0666);
     if (shmid == -1) {
         perror("Error al acceder a la memoria compartida");
         return 1;
