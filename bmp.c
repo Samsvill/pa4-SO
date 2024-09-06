@@ -43,15 +43,25 @@ BMP_Image* createBMPImage(FILE* fptr) {
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
+    printf("Entrando al malloc de pixels_data\n");
+    printf("Image size: %d x %d\n", image->header.width_px, image->norm_height);
+    printf("Bits per pixel: %d\n", image->header.bits_per_pixel);
+    printf("Malloc size: %d\n", abs(image->norm_height) * image->header.width_px * sizeof(Pixel));
+    
     // Asignar memoria para todos los píxeles de la imagen en un bloque contiguo
-    image->pixels_data = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
+    image->pixels_data = (Pixel *)malloc(abs(image->norm_height) * image->header.width_px * sizeof(Pixel));
     if (image->pixels_data == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
 
+    printf("Entrando al malloc de pixels\n");
+    printf("norm height: %d\n", image->norm_height);
+    printf("size of pixel: %d\n", sizeof(Pixel));
+    printf("Malloc size: %d\n", abs(image->norm_height) * sizeof(Pixel *));
+    
     // Asignar memoria para el doble puntero `pixels` (para las filas)
-    image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
+    image->pixels = (Pixel **)malloc(abs(image->norm_height) * sizeof(Pixel *));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);

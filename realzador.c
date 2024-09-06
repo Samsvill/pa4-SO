@@ -88,10 +88,7 @@ int main(int argc, char *argv[]) {
 
     // Marcar como procesado y enviar la señal correspondiente
     printf("Marcando como procesado y enviando señal...\n");
-    if (strcmp(argv[1], "half1") == 0) {
-        shared_data->half1_done = 1;
-        pthread_cond_signal(&(shared_data->cond_half1));
-    } else {
+    if (strcmp(argv[1], "half2") == 0) {
         shared_data->half2_done = 1;
         pthread_cond_signal(&(shared_data->cond_half2));
     }
