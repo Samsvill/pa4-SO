@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
 
     // Esperar a que el combinador termine
     waitpid(pid_combinador, NULL, 0);
-    printf("combinador terminó")
+    printf("combinador terminó");
     // Destruir el mutex
     pthread_mutex_destroy(&(shared_data->mutex));
     // Desconectar y liberar la memoria compartida
