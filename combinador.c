@@ -29,16 +29,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    printf("Memoria compartida accedida\n");
+    printf("adjuntando la memoria compartida\n");
     // Adjuntar la memoria compartida
     SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
     if (shared_data == (SharedData *)-1) {
         perror("Error al adjuntar la memoria compartida");
         return 1;
     }
-
+    printf("Memoria compartida adjuntada\n");
+    printf("Esperando a que ambas mitades estén procesadas\n");
     // Esperar a que ambas mitades estén procesadas
     pthread_mutex_lock(&(shared_data->mutex));
-
+    printf("mutex lock\n");
     // Esperar a que la mitad 1 esté lista
     while (!shared_data->half1_done) {
         pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 1
