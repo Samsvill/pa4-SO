@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     if (pid_realzador == 0) {
         // Proceso hijo: lanzar el realzador
         //char *args[] = {"./realzador", "half1", argv[3], NULL};
-        char *args[] = {"echo", "half1", argv[3], NULL};
+        char *args[] = {"echo", "Dentro del hilo que lanzó el realzador...", NULL};
         execvp(args[0], args);
         perror("Error al ejecutar el realzador");
         exit(1);
@@ -103,8 +103,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Esperar a que ambos procesos terminen
+    printf("Esperando realzador\n");
+
     waitpid(pid_realzador, NULL, 0);
+    printF("Realzador terminó,esperando desenfocador\n");
     waitpid(pid_desenfocador, NULL, 0);
+    printf("Realzador terminó\n")
 
     // Después de que ambos hayan terminado, lanzar el combinador
     pid_t pid_combinador = fork();
