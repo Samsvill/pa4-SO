@@ -68,6 +68,8 @@ typedef struct {
     pthread_mutex_t mutex;      // Mutex para sincronización entre procesos
     pthread_cond_t cond_half1;  // Condición para la primera mitad
     pthread_cond_t cond_half2;  // Condición para la segunda mitad
+    int half1_done;             // Bandera para indicar que la primera mitad está lista
+    int half2_done;             // Bandera para indicar que la segunda mitad está lista
     BMP_Image image;            // Imagen BMP
     Pixel pixels[];             // Arreglo flexible de píxeles
 } SharedData;

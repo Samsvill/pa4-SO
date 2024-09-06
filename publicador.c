@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     // Crear o acceder a la memoria compartida
     printf("Creando/accediendo a la memoria compartida...\n");
    
-    key_t key = ftok(imageFile, SHM_KEY);  // Genera una clave única a partir de un archivo
+    key_t key = ftok(inputFile, SHM_KEY);  // Genera una clave única a partir de un archivo
     if (key == -1) {
         perror("Error al generar la clave con ftok");
         exit(1);
@@ -119,13 +119,12 @@ int main(int argc, char *argv[]) {
     // Esperar a que el combinador termine
     waitpid(pid_combinador, NULL, 0);
 
-        // Destruir el mutex
-        pthread_mutex_destroy(&(shared_data->mutex));
-
-        // Desconectar y liberar la memoria compartida
-        shmdt(shared_data);
-        shmctl(shmid, IPC_RMID, NULL);  // Eliminar la memoria compartida
-    }
+    // Destruir el mutex
+    pthread_mutex_destroy(&(shared_data->mutex));
+    // Desconectar y liberar la memoria compartida
+    shmdt(shared_data);
+    shmctl(shmid, IPC_RMID, NULL);  // Eliminar la memoria compartida
+    
 
     return 0;
 }
