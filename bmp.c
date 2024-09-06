@@ -24,7 +24,7 @@ void printError(int error) {
     }
 }
 
-// Función para leer una imagen BMP completa, manejando el padding
+
 BMP_Image* createBMPImage(FILE* fptr) {
     if (fptr == NULL) {
         printError(FILE_ERROR);
@@ -80,7 +80,7 @@ BMP_Image* createBMPImage(FILE* fptr) {
 }
 
 
-// Función para escribir una imagen BMP en un archivo, manejando el padding
+// Función para escribir una imagen BMP en un archivo
 void writeImage(char *destFileName, BMP_Image *dataImage) {
     FILE *destFile = fopen(destFileName, "wb");
     if (destFile == NULL) {
@@ -110,11 +110,21 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
             fclose(destFile);
             exit(EXIT_FAILURE);
         }
+
+        // Depuración: imprimir la fila que se está escribiendo
+        printf("Escribiendo fila %d: ", i);
+        for (int j = 0; j < dataImage->header.width_px; j++) {
+            Pixel *p = &dataImage->pixels_data[i * dataImage->header.width_px + j];
+            printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
+        }
+        printf("\n");
+
         fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
     }
 
     fclose(destFile);
 }
+
 
 
 // Función para liberar la memoria de una imagen BMP

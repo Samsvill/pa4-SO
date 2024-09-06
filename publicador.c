@@ -32,8 +32,10 @@ int main(int argc, char *argv[]) {
 
     // Calcular el tamaño de la memoria compartida
     int imageSize = sizeof(Pixel) * image->norm_height * image->header.width_px;
+    printf("tamaño calculado: %d\n", imageSize);
+    printf("tamaño de la imagen: %d\n", image->header.imagesize);
     int shm_size = sizeof(SharedData) + imageSize;  // Incluyendo SharedData y los píxeles
-
+    printf("tamaño de la memoria compartida: %d\n", sizeof(SharedData) + imageSize);
     // Crear o acceder a la memoria compartida
     printf("Creando/accediendo a la memoria compartida...\n");
 
@@ -79,7 +81,19 @@ int main(int argc, char *argv[]) {
     memcpy(&(shared_data->image), image, sizeof(BMP_Image));
 
     // Copiar los píxeles en el arreglo flexible `pixels[]` en la memoria compartida
-    memcpy(shared_data->pixels, image->pixels_data, imageSize);
+    for (int i = 0; i < image->norm_height; i++) {
+        memcpy(&shared_data->pixels[i * image->header.width_px], 
+               &image->pixels_data[i * image->header.width_px], 
+               image->header.width_px * sizeof(Pixel));
+    
+        // Agregar impresión de depuración:
+        printf("Copiando fila %d: ", i);
+        for (int j = 0; j < image->header.width_px; j++) {
+            Pixel *p = &image->pixels_data[i * image->header.width_px + j];
+            printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
+        }
+        printf("\n");
+    }
 
     // Asignar las filas a los punteros del doble puntero `pixels`
     for (int i = 0; i < image->norm_height; i++) {
