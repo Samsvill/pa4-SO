@@ -64,7 +64,7 @@ BMP_Image* createBMPImage(FILE* fptr) {
     image->pixels_data = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
     memset(image->pixels_data, 0, image->norm_height * image->header.width_px * sizeof(Pixel));
     
-    if (image->pixels_data == NULL || sizeOf(image->pixels_data) == 0 || sizeof(image->pixels_data) != image->norm_height * image->header.width_px * sizeof(Pixel)) {
+    if (image->pixels_data == NULL || sizeof(image->pixels_data) == 0 || sizeof(image->pixels_data) != image->norm_height * image->header.width_px * sizeof(Pixel)) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
