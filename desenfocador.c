@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = (strcmp(argv[0], "./realzador") == 0) ? simplifiedSobelFilter : blurFilter;
+        threadArgs[i].filter = blurFilter;
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
 
