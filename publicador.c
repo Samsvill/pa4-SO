@@ -106,9 +106,9 @@ int main(int argc, char *argv[]) {
     printf("Esperando realzador\n");
 
     waitpid(pid_realzador, NULL, 0);
-    printF("Realzador terminó,esperando desenfocador\n");
+    printf("Realzador terminó,esperando desenfocador\n");
     waitpid(pid_desenfocador, NULL, 0);
-    printf("Realzador terminó\n")
+    printf("Realzador terminó\n");
 
     // Después de que ambos hayan terminado, lanzar el combinador
     pid_t pid_combinador = fork();
