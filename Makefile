@@ -1,23 +1,30 @@
 # Makefile
 
+# Nombre del compilador
 CC = gcc
-CFLAGS = -Wall -pthread
-TARGETS = publicador desenfocador realzador combinador
 
-all: $(TARGETS)
+# Bandera para la depuración y las bibliotecas de hilos
+CFLAGS = -g -lpthread
 
-publicador: publicador.c bmp.h
-	$(CC) $(CFLAGS) -o publicador publicador.c
+# Fuentes comunes
+BMP_SRC = bmp.c
 
-desenfocador: desenfocador.c bmp.h
-	$(CC) $(CFLAGS) -o desenfocador desenfocador.c
+# Objetivos
+all: publicador realzador desenfocador combinador
 
-realzador: realzador.c bmp.h
-	$(CC) $(CFLAGS) -o realzador realzador.c
+# Reglas para cada programa
+publicador: publicador.c $(BMP_SRC)
+	$(CC) -o publicador publicador.c $(BMP_SRC) $(CFLAGS)
 
-combinador: combinador.c bmp.h
-	$(CC) $(CFLAGS) -o combinador combinador.c
+realzador: realzador.c $(BMP_SRC) filter.c
+	$(CC) -o realzador realzador.c $(BMP_SRC) filter.c $(CFLAGS)
 
+desenfocador: desenfocador.c $(BMP_SRC) filter.c
+	$(CC) -o desenfocador desenfocador.c $(BMP_SRC) filter.c $(CFLAGS)
+
+combinador: combinador.c $(BMP_SRC)
+	$(CC) -o combinador combinador.c $(BMP_SRC) $(CFLAGS)
+
+# Limpieza
 clean:
-	rm -f $(TARGETS) output.bmp
-
+	rm -f publicador realzador desenfocador combinador

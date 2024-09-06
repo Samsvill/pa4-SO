@@ -1,56 +1,57 @@
-// combinador.c
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <pthread.h>
 #include "bmp.h"
 
-#define SHM_KEY 12345
-#define OUTPUT_FILE "output.bmp"
+#define SHM_KEY 1234
+#define PATH_NAME "test.bmp"
 
-void save_bmp(const char *filename, BmpImage *image) {
-    FILE *file = fopen(filename, "wb");
-    if (!file) {
-        perror("fopen");
-        exit(1);
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Uso: %s <ruta_salida>\n", argv[0]);
+        return 1;
     }
 
-    // Escribir el encabezado BMP
-    fwrite(&image->header, sizeof(BmpHeader), 1, file);
-
-    // Escribir los píxeles
-    fseek(file, image->header.offset, SEEK_SET);
-    fwrite(image->pixels, image->header.image_size_bytes, 1, file);
-
-    fclose(file);
-    printf("Imagen guardada en %s\n", filename);
-}
-
-int main() {
-    int shm_id;
-    BmpImage *shm_ptr;
-
-    // Adjuntar a la memoria compartida
-    shm_id = shmget(SHM_KEY, 0, 0666);
-    if (shm_id < 0) {
-        perror("shmget");
-        exit(1);
+    // Generar la clave con ftok
+    key_t key = ftok(SHM_KEY, PATH_NAME);
+    if (key == -1) {
+        perror("Error al generar la clave con ftok");
+        return 1;
     }
 
-    shm_ptr = (BmpImage *)shmat(shm_id, NULL, 0);
-    if (shm_ptr == (BmpImage *)-1) {
-        perror("shmat");
-        exit(1);
+    // Acceder a la memoria compartida
+    int shmid = shmget(key, 0, 0666);
+    if (shmid == -1) {
+        perror("Error al acceder a la memoria compartida");
+        return 1;
     }
 
-    // Aquí, asumiendo que las dos mitades ya están procesadas,
-    // simplemente guardamos la imagen combinada.
-    save_bmp(OUTPUT_FILE, shm_ptr);
+    // Adjuntar la memoria compartida
+    SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
+    if (shared_data == (SharedData *)-1) {
+        perror("Error al adjuntar la memoria compartida");
+        return 1;
+    }
 
-    // Desvincular la memoria compartida
-    shmdt(shm_ptr);
+    // Bloquear el mutex y esperar a que ambas mitades estén listas
+    pthread_mutex_lock(&(shared_data->mutex));
+    while (!shared_data->half1_done) {
+        pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));
+    }
+    while (!shared_data->half2_done) {
+        pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));
+    }
+
+    // Escribir la imagen de salida
+    writeImage(argv[1], &(shared_data->image));
+
+    // Desbloquear el mutex
+    pthread_mutex_unlock(&(shared_data->mutex));
+
+    // Desconectar de la memoria compartida
+    shmdt(shared_data);
 
     return 0;
 }
-

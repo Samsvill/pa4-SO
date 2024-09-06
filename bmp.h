@@ -65,11 +65,14 @@ typedef struct BMP_Image {
 } BMP_Image;
 
 typedef struct {
-    pthread_mutex_t mutex;  // Mutex para sincronización entre procesos
-    BMP_Image image;        // Imagen BMP
-    Pixel pixels[];         // Arreglo flexible de píxeles
+    pthread_mutex_t mutex;      // Mutex para sincronización entre procesos
+    pthread_cond_t cond_half1;  // Condición para la primera mitad
+    pthread_cond_t cond_half2;  // Condición para la segunda mitad
+    BMP_Image image;            // Imagen BMP
+    Pixel pixels[];             // Arreglo flexible de píxeles
 } SharedData;
 
+void readImageData(FILE *srcFile, BMP_Image *dataImage, int dataSize);
 void printError(int error);
 BMP_Image* createBMPImage(FILE* fptr);
 BMP_Image *initializeImageOut(BMP_Image *imageIn);

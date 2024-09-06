@@ -9,11 +9,11 @@
 #include "bmp.h"
 
 #define SHM_KEY 1234  // Clave para la memoria compartida
-#define PATH_NAME "/tmp"
+#define PATH_NAME "test.bmp"
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Uso: %s <ruta_imagen>\n", argv[0]);
+    if (argc != 4) {
+        printf("Uso: %s <ruta_imagen> <ruta_output> <hilos_filtro1> <hilos_filtro2>\n", argv[0]);
         return 1;
     }
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     // Crear o acceder a la memoria compartida
     printf("Creando/accediendo a la memoria compartida...\n");
    
-    key_t key = ftok(PATH_NAME, SHM_KEY);  // Genera una clave única a partir de un archivo
+    key_t key = ftok(imageFile, SHM_KEY);  // Genera una clave única a partir de un archivo
     if (key == -1) {
         perror("Error al generar la clave con ftok");
         exit(1);
@@ -58,12 +58,22 @@ int main(int argc, char *argv[]) {
     // Inicializar el mutex si es necesario
     pthread_mutexattr_t mutex_attr;
     pthread_mutexattr_init(&mutex_attr);
-    pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);  // El mutex será compartido entre procesos
+    pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);
     pthread_mutex_init(&(shared_data->mutex), &mutex_attr);
+    //Condicionessss
+    pthread_condattr_t cond_attr;
+    pthread_condattr_init(&cond_attr);
+    pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_SHARED);
+    pthread_cond_init(&(shared_data->cond_half1), &cond_attr);
+    pthread_cond_init(&(shared_data->cond_half2), &cond_attr);
+    
+    // Inicializar los estados de procesamiento
+    shared_data->half1_done = 0;
+    shared_data->half2_done = 0;
 
-    // Bloquear el mutex antes de acceder a la memoria compartida
+    // Bloquear el mutex antes de escribir en la memoria compartida
     pthread_mutex_lock(&(shared_data->mutex));
-
+    
     // Copiar la imagen en la memoria compartida (encabezado y píxeles)
     memcpy(&(shared_data->image), image, sizeof(BMP_Image));
     memcpy(shared_data->pixels, image->pixels, image->norm_height * image->header.width_px * sizeof(Pixel));
@@ -75,27 +85,39 @@ int main(int argc, char *argv[]) {
     freeImage(image);
 
     // Crear un proceso hijo para lanzar el realzador
-    pid_t pid = fork();
-    if (pid < 0) {
-        perror("Error al hacer fork");
-        exit(1);
-    }
-
-    if (pid == 0) {
-        // Código del proceso hijo: ejecutar el realzador
-        char *args[] = {"./realzador", "output_test.bmp", "4", NULL};  // 4 hilos como ejemplo
+    pid_t pid_realzador = fork();
+    if (pid_realzador == 0) {
+        // Proceso hijo: lanzar el realzador
+        char *args[] = {"./realzador", "half1", argv[3], NULL};
         execvp(args[0], args);
         perror("Error al ejecutar el realzador");
         exit(1);
-    } else {
-        // Código del proceso padre: esperar a que el realzador termine
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status)) {
-            printf("Realzador finalizó con estado %d\n", WEXITSTATUS(status));
-        } else {
-            printf("Realzador no terminó correctamente\n");
-        }
+    }
+
+    pid_t pid_desenfocador = fork();
+    if (pid_desenfocador == 0) {
+        // Proceso hijo: lanzar el desenfocador
+        char *args[] = {"./desenfocador", "half2", argv[4], NULL};
+        execvp(args[0], args);
+        perror("Error al ejecutar el desenfocador");
+        exit(1);
+    }
+
+    // Esperar a que ambos procesos terminen
+    waitpid(pid_realzador, NULL, 0);
+    waitpid(pid_desenfocador, NULL, 0);
+
+    // Después de que ambos hayan terminado, lanzar el combinador
+    pid_t pid_combinador = fork();
+    if (pid_combinador == 0) {
+        char *args[] = {"./combinador", "output.bmp", NULL};
+        execvp(args[0], args);
+        perror("Error al ejecutar el combinador");
+        exit(1);
+    }
+
+    // Esperar a que el combinador termine
+    waitpid(pid_combinador, NULL, 0);
 
         // Destruir el mutex
         pthread_mutex_destroy(&(shared_data->mutex));
