@@ -25,47 +25,32 @@ void printError(int error) {
 }
 
 // Función para leer una imagen BMP completa, manejando el padding
-BMP_Image *createBMPImage(FILE *fptr) {
-    if (fptr == NULL) {
+BMP_Image *createBMPImage(FILE *fptr, void *shared_mem) {
+    if (fptr == NULL || shared_mem == NULL) {
         printError(FILE_ERROR);
         exit(EXIT_FAILURE);
     }
 
-    BMP_Image *image = (BMP_Image *)malloc(sizeof(BMP_Image));
-    if (image == NULL) {
-        printError(MEMORY_ERROR);
-        exit(EXIT_FAILURE);
-    }
+    BMP_Image *image = (BMP_Image *)shared_mem;  // El encabezado se almacena en la memoria compartida
+    fread(&(image->header), sizeof(BMP_Header), 1, fptr);
 
-    // Leer el encabezado de la imagen
-    if (fread(&(image->header), sizeof(BMP_Header), 1, fptr) != 1) {
-        printError(FILE_ERROR);
-        exit(EXIT_FAILURE);
-    }
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
-    // Calcular el tamaño del padding (si el ancho no es múltiplo de 4)
-    int padding = (4 - (image->header.width_px * image->bytes_per_pixel) % 4) % 4;
+    // Puntero a la memoria contigua para almacenar todos los píxeles
+    image->pixels_data = (Pixel *)(shared_mem + sizeof(BMP_Image));
 
-    // Asignar memoria contigua para todos los píxeles
-    image->pixels = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
+    // Asignar el puntero doble a las filas
+    image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
 
-    // Leer los píxeles, fila por fila, manejando el padding
+    // Apuntar cada fila a la parte correspondiente en el bloque contiguo
     for (int i = 0; i < image->norm_height; i++) {
-        if (fread(&image->pixels[i * image->header.width_px],
-                image->bytes_per_pixel, 
-                image->header.width_px, 
-                fptr)
-                != image->header.width_px) {
-            printError(FILE_ERROR);
-            exit(EXIT_FAILURE);
-        }
-        fseek(fptr, padding, SEEK_CUR);  // Saltar el padding al final de cada fila
+        image->pixels[i] = &image->pixels_data[i * image->header.width_px];
+        fread(image->pixels[i], image->bytes_per_pixel, image->header.width_px, fptr);  // Leer cada fila
     }
 
     return image;
@@ -87,19 +72,20 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
     }
 
     // Calcular el tamaño del padding
-    int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
-    uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
+    //int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
+    //uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
 
     // Escribir los píxeles fila por fila, agregando el padding necesario
     for (int i = 0; i < dataImage->norm_height; i++) {
-        if (fwrite(&dataImage->pixels[i * dataImage->header.width_px], 
-                    dataImage->bytes_per_pixel, dataImage->header.width_px, 
+        if (fwrite(&dataImage->pixels[i * abs(dataImage->header.width_px)], 
+                    dataImage->bytes_per_pixel,
+                    dataImage->header.width_px, 
                     destFile) != dataImage->header.width_px) {
             printError(FILE_ERROR);
             fclose(destFile);
             exit(EXIT_FAILURE);
         }
-        fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
+        //fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
     }
 
     fclose(destFile);
@@ -112,12 +98,10 @@ void freeImage(BMP_Image *image) {
         return;
     }
 
-    // Liberar la memoria de los píxeles
+    // Solo se libera el puntero de punteros (no la memoria compartida)
     if (image->pixels != NULL) {
         free(image->pixels);
     }
-
-    free(image);
 }
 
 // Función para inicializar una imagen de salida con las mismas dimensiones que la de entrada

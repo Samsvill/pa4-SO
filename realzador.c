@@ -17,7 +17,6 @@ int main(int argc, char *argv[]) {
     }
 
     int numThreads = atoi(argv[2]);
-    char *outputFile = argv[1];  // Usar el archivo de salida que se pasa como argumento
 
     // Acceder a la memoria compartida (el publicador ya debería haber cargado la imagen)
     key_t key = ftok(PATH_NAME, SHM_KEY);
@@ -48,6 +47,13 @@ int main(int argc, char *argv[]) {
     BMP_Image *imageIn = &(shared_data->image);
     BMP_Image *imageOut = initializeImageOut(imageIn);
 
+    // Asegurar que `imageOut->pixels` apunte a la memoria adecuada (memoria contigua)
+    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
+    imageOut->pixels_data = (Pixel *)malloc(imageOut->norm_height * imageOut->header.width_px * sizeof(Pixel));
+    for (int i = 0; i < imageOut->norm_height; i++) {
+        imageOut->pixels[i] = &imageOut->pixels_data[i * imageOut->header.width_px];
+    }
+
     // Crear hilos para aplicar el filtro
     printf("Aplicando filtro en la mitad %s con %d hilos...\n", argv[1], numThreads);
     pthread_t threads[numThreads];
@@ -61,11 +67,8 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = simplifiedSobelFilter;
-        printf("startRow: %d, endRow: %d\n", threadArgs[i].startRow, threadArgs[i].endRow);
-        printf("Creando hilo %d\n", i);
-        pthread_create(&threads[i], NULL, applyFilterIdentity, &threadArgs[i]);
-        printf("Hilo %d creado\n", i);
+        threadArgs[i].filter = simplifiedSobelFilter;  // El filtro que quieres aplicar
+        pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
     printf("Hilos creados\n");
     printf("Esperando a que los hilos terminen...\n");
@@ -83,9 +86,8 @@ int main(int argc, char *argv[]) {
     printf("Escribiendo en la memoria compartida...\n");
 
     // Copiar los píxeles procesados de nuevo a la memoria compartida
-    printf("Copiando píxeles...\n");
-    memcpy(&shared_data->pixels[startRow * imageIn->header.width_px],
-           &imageOut->pixels[startRow * imageIn->header.width_px],
+    memcpy(&shared_data->pixels_data[startRow * imageIn->header.width_px],
+           &imageOut->pixels_data[startRow * imageIn->header.width_px],
            (endRow - startRow) * imageIn->header.width_px * sizeof(Pixel));
     printf("Píxeles escritos en la memoria compartida\n");
     // Marcar como procesado y enviar la señal correspondiente
@@ -106,6 +108,9 @@ int main(int argc, char *argv[]) {
     shmdt(shared_data);
 
     // Liberar la imagen de salida
-    freeImage(imageOut);
+    free(imageOut->pixels);
+    free(imageOut->pixels_data);
+    free(imageOut);
 
+    return 0;
 }

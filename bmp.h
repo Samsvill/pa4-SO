@@ -61,7 +61,8 @@ typedef struct BMP_Image {
     BMP_Header header;
     int norm_height; //normalized height
     int bytes_per_pixel; // This amount should be equals to number of bits/8
-    Pixel * pixels;
+    Pixel **pixels;        // Doble puntero para acceder a las filas
+    Pixel *pixels_data;    // Puntero simple a los píxeles en memoria contigua
 } BMP_Image;
 
 typedef struct {

@@ -17,13 +17,12 @@ int main(int argc, char *argv[]) {
     }
 
     int numThreads = atoi(argv[2]);
-    char *outputFile = argv[1];  // Usar el archivo de salida que se pasa como argumento
 
     // Acceder a la memoria compartida (el publicador ya debería haber cargado la imagen)
     key_t key = ftok(PATH_NAME, SHM_KEY);
     int shmid = shmget(key, 0, 0666);
     if (shmid == -1) {
-        perror("Error al acceder a la memoria compartida");
+        perror("Error al acceder a la memoria compartida, ¿ejecutó el publicador?");
         return 1;
     }
 
@@ -34,6 +33,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    printf("Memoria compartida accedida\n");
+    printf("norm_height %d",shared_data->image.norm_height);
     int startRow, endRow;
     if (strcmp(argv[1], "half1") == 0) {
         startRow = 0;
@@ -46,34 +47,51 @@ int main(int argc, char *argv[]) {
     BMP_Image *imageIn = &(shared_data->image);
     BMP_Image *imageOut = initializeImageOut(imageIn);
 
+    // Asegurar que `imageOut->pixels` apunte a la memoria adecuada (memoria contigua)
+    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
+    imageOut->pixels_data = (Pixel *)malloc(imageOut->norm_height * imageOut->header.width_px * sizeof(Pixel));
+    for (int i = 0; i < imageOut->norm_height; i++) {
+        imageOut->pixels[i] = &imageOut->pixels_data[i * imageOut->header.width_px];
+    }
+
     // Crear hilos para aplicar el filtro
+    printf("Aplicando filtro en la mitad %s con %d hilos...\n", argv[1], numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
     int rowsPerThread = (endRow - startRow) / numThreads;
+    printf("Filas por hilo: %d\n", rowsPerThread);
 
+    printf("Creando hilos...\n");
     for (int i = 0; i < numThreads; i++) {
         threadArgs[i].startRow = startRow + i * rowsPerThread;
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = blurFilter;
+        threadArgs[i].filter = blurFilter;  // El filtro que quieres aplicar
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
-
+    printf("Hilos creados\n");
+    printf("Esperando a que los hilos terminen...\n");
     // Esperar a que todos los hilos terminen
     for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
     }
+    printf("Hilos terminados\n");
 
+    printf("Escribiendo imagen de salida...\n");
     // Bloquear el mutex antes de escribir en la memoria compartida
+    printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));
+    printf("Mutex bloqueado\n");
+    printf("Escribiendo en la memoria compartida...\n");
 
     // Copiar los píxeles procesados de nuevo a la memoria compartida
-    memcpy(&shared_data->pixels[startRow * imageIn->header.width_px],
-           &imageOut->pixels[startRow * imageIn->header.width_px],
+    memcpy(&shared_data->pixels_data[startRow * imageIn->header.width_px],
+           &imageOut->pixels_data[startRow * imageIn->header.width_px],
            (endRow - startRow) * imageIn->header.width_px * sizeof(Pixel));
-
+    printf("Píxeles escritos en la memoria compartida\n");
     // Marcar como procesado y enviar la señal correspondiente
+    printf("Marcando como procesado y enviando señal...\n");
     if (strcmp(argv[1], "half1") == 0) {
         shared_data->half1_done = 1;
         pthread_cond_signal(&(shared_data->cond_half1));
@@ -81,14 +99,18 @@ int main(int argc, char *argv[]) {
         shared_data->half2_done = 1;
         pthread_cond_signal(&(shared_data->cond_half2));
     }
-
+    printf("Listo\n");
     // Desbloquear el mutex
+    printf("Desbloqueando mutex...\n");
     pthread_mutex_unlock(&(shared_data->mutex));
-
+    printf("Mutex desbloqueado\n");
     // Desconectar de la memoria compartida
     shmdt(shared_data);
 
     // Liberar la imagen de salida
-    freeImage(imageOut);
+    free(imageOut->pixels);
+    free(imageOut->pixels_data);
+    free(imageOut);
 
+    return 0;
 }
