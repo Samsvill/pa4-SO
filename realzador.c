@@ -40,11 +40,11 @@ int main(int argc, char *argv[]) {
     // Crear hilos para aplicar el filtro
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = imageIn->norm_height / numThreads;
+    int rowsPerThread = abs(imageIn->norm_height) / numThreads;
 
     for (int i = 0; i < numThreads; i++) {
         threadArgs[i].startRow = i * rowsPerThread;
-        threadArgs[i].endRow = (i == numThreads - 1) ? imageIn->norm_height : threadArgs[i].startRow + rowsPerThread;
+        threadArgs[i].endRow = (i == numThreads - 1) ? abs(imageIn->norm_height) : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
         threadArgs[i].filter = simplifiedSobelFilter;  // Usar el filtro adecuado

@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     fclose(imageFile);
 
     // Calcular el tamaño de la memoria compartida
-    int imageSize = sizeof(BMP_Image) + image->norm_height * image->header.width_px * sizeof(Pixel);
+    int imageSize = sizeof(BMP_Image) + abs(image->norm_height) * image->header.width_px * sizeof(Pixel);
     int shm_size = sizeof(pthread_mutex_t) + imageSize;
 
     // Crear o acceder a la memoria compartida
