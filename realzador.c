@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     printf("Aplicando filtro en la mitad %s con %d hilos...\n", argv[1], numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = endRow - startRow / numThreads;
+    int rowsPerThread = (endRow - startRow) / numThreads;
     printf("Filas por hilo: %d\n", rowsPerThread);
 
     printf("Creando hilos...\n");
