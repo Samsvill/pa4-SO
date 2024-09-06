@@ -62,14 +62,14 @@ BMP_Image* createBMPImage(FILE* fptr) {
     printf("Malloc size calculado: %d\n", image->norm_height * image->header.width_px * sizeof(Pixel));
     printf("Cuanto pesa de verdad un pixels_data: %d\n", sizeof(image->pixels_data));
     image->pixels_data = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
+    memset(image->pixels_data, 0, image->norm_height * image->header.width_px * sizeof(Pixel));
     
-    if (image->pixels_data == NULL) {
+    if (image->pixels_data == NULL || sizeOf(image->pixels_data) == 0 || sizeof(image->pixels_data) != image->norm_height * image->header.width_px * sizeof(Pixel)) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
     // Inicializar los píxeles a 0
-    memset(image->pixels_data, 0, image->norm_height * image->header.width_px * sizeof(Pixel));
-    printf("Entrando al malloc de pixels\n");
+    printf("Entrando al malloc de pixels ------------------------------------------------------\n \n");
     printf("norm height: %d\n", image->norm_height);
     printf("size of pixel: %d\n", sizeof(Pixel));
     printf("Malloc size: %d\n", abs(image->norm_height) * sizeof(Pixel *));
