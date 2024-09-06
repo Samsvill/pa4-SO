@@ -2,89 +2,70 @@
 #include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <string.h>
+#include <sys/sem.h>
+#include <pthread.h>
 #include "bmp.h"
 
-// Función principal del publicador
+#define SHM_KEY 1234  // Clave para la memoria compartida
+#define SEM_KEY 5678  // Clave para el semáforo
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         printf("Uso: %s <ruta_imagen>\n", argv[0]);
         return 1;
     }
 
-    char *inputFile = argv[1];
+    // Crear o acceder a la memoria compartida
+    int shmid = shmget(SHM_KEY, sizeof(BMP_Image), 0666 | IPC_CREAT);
+    if (shmid < 0) {
+        perror("Error al crear/acceder a la memoria compartida");
+        exit(1);
+    }
 
-    // Abrir la imagen BMP desde el archivo
+    // Adjuntar la memoria compartida
+    BMP_Image *sharedImage = (BMP_Image *)shmat(shmid, NULL, 0);
+    if (sharedImage == (BMP_Image *)-1) {
+        perror("Error al adjuntar la memoria compartida");
+        exit(1);
+    }
+
+    // Cargar la imagen desde el archivo
+    char *inputFile = argv[1];
     FILE *imageFile = fopen(inputFile, "rb");
     if (imageFile == NULL) {
         printError(FILE_ERROR);
-        return 1;
+        exit(1);
     }
 
-    // Crear estructura BMP y cargar la imagen
-    BMP_Image *imageIn = createBMPImage(imageFile);
+    BMP_Image *image = createBMPImage(imageFile);
     fclose(imageFile);
 
-    // Calcular el tamaño total de la imagen (encabezado + datos de píxeles)
-    size_t total_image_size = imageIn->norm_height * imageIn->header.width_px * sizeof(Pixel);
-
-    // Crear memoria compartida para almacenar la imagen BMP completa
-    int shm_id = shmget(IPC_PRIVATE, sizeof(BMP_Image) + total_image_size, IPC_CREAT | 0666);
-    if (shm_id == -1) {
-        perror("Error al crear la memoria compartida");
-        exit(EXIT_FAILURE);
+    // Copiar la imagen a la memoria compartida
+    *sharedImage = *image;  // Copiar el encabezado
+    for (int i = 0; i < image->norm_height; i++) {
+        memcpy(sharedImage->pixels[i], image->pixels[i], image->header.width_px * sizeof(Pixel));
     }
 
-    // Adjuntar la memoria compartida al proceso
-    void *shm_ptr = shmat(shm_id, NULL, 0);
-    if (shm_ptr == (void *)-1) {
-        perror("Error al adjuntar la memoria compartida");
-        exit(EXIT_FAILURE);
+    // Crear un semáforo
+    int semid = semget(SEM_KEY, 1, 0666 | IPC_CREAT);
+    if (semid == -1) {
+        perror("Error al crear el semáforo");
+        exit(1);
     }
 
-    // Copiar el encabezado BMP a la memoria compartida
-    memcpy(shm_ptr, imageIn, sizeof(BMP_Image));
+    // Inicializar el semáforo a 1 (imagen lista)
+    semctl(semid, 0, SETVAL, 1);
 
-    // Copiar los datos de los píxeles a la memoria compartida (después del encabezado)
-    void *pixel_ptr = shm_ptr + sizeof(BMP_Image);
-    for (int i = 0; i < imageIn->norm_height; i++) {
-        memcpy(pixel_ptr + (i * imageIn->header.width_px * sizeof(Pixel)),
-               imageIn->pixels[i],
-               imageIn->header.width_px * sizeof(Pixel));
-    }
+    // Imprimir la imagen para verificar
+    printf("Imagen cargada en memoria compartida. Esperando a que el realzador procese...\n");
 
-    // Ahora leeremos la imagen de vuelta desde la memoria compartida para verificar que se cargó bien
+    // Esperar (el publicador se queda "vivo" mientras los otros procesos terminan)
+    pause();
 
-    // Crear una nueva estructura BMP para almacenar la imagen leída de la memoria compartida
-    BMP_Image *imageOut = (BMP_Image *)malloc(sizeof(BMP_Image));
-    if (imageOut == NULL) {
-        printError(MEMORY_ERROR);
-        exit(EXIT_FAILURE);
-    }
-
-    // Copiar el encabezado BMP desde la memoria compartida
-    memcpy(imageOut, shm_ptr, sizeof(BMP_Image));
-
-    // Asignar memoria para los píxeles de la imagen leída
-    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
-    for (int i = 0; i < imageOut->norm_height; i++) {
-        imageOut->pixels[i] = (Pixel *)malloc(imageOut->header.width_px * sizeof(Pixel));
-        memcpy(imageOut->pixels[i], pixel_ptr + (i * imageOut->header.width_px * sizeof(Pixel)),
-               imageOut->header.width_px * sizeof(Pixel));
-    }
-
-    // Guardar la imagen leída de la memoria compartida en un archivo de salida
-    writeImage("output_shared_memory.bmp", imageOut);
-
-    // Imprimir el ID de la memoria compartida para que otros procesos puedan acceder
-    printf("ID de memoria compartida: %d\n", shm_id);
-
-    // Liberar la memoria local
-    freeImage(imageIn);
-    freeImage(imageOut);
-
-    // Separar el segmento de memoria compartida del proceso
-    shmdt(shm_ptr);
+    // Liberar la memoria compartida
+    shmdt(sharedImage);
+    shmctl(shmid, IPC_RMID, NULL);  // Eliminar memoria compartida al terminar
+    semctl(semid, 0, IPC_RMID);  // Eliminar el semáforo
 
     return 0;
 }
