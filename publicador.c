@@ -71,10 +71,14 @@ int main(int argc, char *argv[]) {
     shared_data->half1_done = 0;
     shared_data->half2_done = 0;
     
+    printf("Memoria compartida creada/accedida con ID %d\n", shmid);
+    printf("Compartiendo imagen...\n");
     // Copiar la imagen en la memoria compartida (encabezado y píxeles)
     memcpy(&(shared_data->image), image, sizeof(BMP_Image));
     memcpy(shared_data->pixels, image->pixels, image->norm_height * image->header.width_px * sizeof(Pixel));
 
+    printf("Imagen compartida\n");
+    
     // Liberar la imagen original (ya está copiada en la memoria compartida)
     freeImage(image);
 

@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     key_t key = ftok(PATH_NAME, SHM_KEY);
     int shmid = shmget(key, 0, 0666);
     if (shmid == -1) {
-        perror("Error al acceder a la memoria compartida");
+        perror("Error al acceder a la memoria compartida, ¿ejecutó el publicador?");
         return 1;
     }
 
@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
     BMP_Image *imageOut = initializeImageOut(imageIn);
 
     // Crear hilos para aplicar el filtro
+    printf("Aplicando filtro en la mitad %s con %d hilos...\n", argv[1], numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
     int rowsPerThread = endRow - startRow / numThreads;
@@ -68,12 +69,14 @@ int main(int argc, char *argv[]) {
     // Bloquear el mutex antes de escribir en la memoria compartida
     pthread_mutex_lock(&(shared_data->mutex));
 
+    printf("Escribiendo en la memoria compartida...\n");
     // Copiar los píxeles procesados de nuevo a la memoria compartida
     memcpy(&shared_data->pixels[startRow * imageIn->header.width_px],
            &imageOut->pixels[startRow * imageIn->header.width_px],
            (endRow - startRow) * imageIn->header.width_px * sizeof(Pixel));
-
+    printf("Píxeles escritos en la memoria compartida\n");
     // Marcar como procesado y enviar la señal correspondiente
+    printf("Marcando como procesado y enviando señal...\n");
     if (strcmp(argv[1], "half1") == 0) {
         shared_data->half1_done = 1;
         pthread_cond_signal(&(shared_data->cond_half1));
@@ -81,10 +84,11 @@ int main(int argc, char *argv[]) {
         shared_data->half2_done = 1;
         pthread_cond_signal(&(shared_data->cond_half2));
     }
-
+    printf("Listo\n");
     // Desbloquear el mutex
+    printf("Desbloqueando mutex...\n");
     pthread_mutex_unlock(&(shared_data->mutex));
-
+    printf("Mutex desbloqueado\n");
     // Desconectar de la memoria compartida
     shmdt(shared_data);
 
