@@ -1,79 +1,90 @@
-// publicador.c
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <string.h>
 #include "bmp.h"
 
-#define SHM_KEY 12345
-#define MAX_IMAGE_SIZE 1024*1024*10  // Tamaño máximo de imagen de 10 MB
-
-BmpImage* load_bmp(const char *filename) {
-    FILE *file = fopen(filename, "rb");
-    if (!file) {
-        perror("fopen");
-        return NULL;
+// Función principal del publicador
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Uso: %s <ruta_imagen>\n", argv[0]);
+        return 1;
     }
 
-    BmpImage *image = (BmpImage *)malloc(sizeof(BmpImage));
+    char *inputFile = argv[1];
 
-    // Leer el encabezado de la imagen BMP
-    fread(&image->header, sizeof(BmpHeader), 1, file);
-
-    // Verificar que sea un archivo BMP válido
-    if (image->header.type != 0x4D42) {
-        printf("Archivo no es un BMP válido.\n");
-        free(image);
-        fclose(file);
-        return NULL;
+    // Abrir la imagen BMP desde el archivo
+    FILE *imageFile = fopen(inputFile, "rb");
+    if (imageFile == NULL) {
+        printError(FILE_ERROR);
+        return 1;
     }
 
-    // Leer los píxeles
-    image->pixels = (Pixel *)malloc(image->header.image_size_bytes);
-    fseek(file, image->header.offset, SEEK_SET);
-    fread(image->pixels, image->header.image_size_bytes, 1, file);
+    // Crear estructura BMP y cargar la imagen
+    BMP_Image *imageIn = createBMPImage(imageFile);
+    fclose(imageFile);
 
-    fclose(file);
-    return image;
-}
+    // Calcular el tamaño total de la imagen (encabezado + datos de píxeles)
+    size_t total_image_size = imageIn->norm_height * imageIn->header.width_px * sizeof(Pixel);
 
-int main() {
-    int shm_id;
-    void *shm_ptr;
-
-    // Crear segmento de memoria compartida
-    shm_id = shmget(SHM_KEY, MAX_IMAGE_SIZE, IPC_CREAT | 0666);
-    if (shm_id < 0) {
-        perror("shmget");
-        exit(1);
+    // Crear memoria compartida para almacenar la imagen BMP completa
+    int shm_id = shmget(IPC_PRIVATE, sizeof(BMP_Image) + total_image_size, IPC_CREAT | 0666);
+    if (shm_id == -1) {
+        perror("Error al crear la memoria compartida");
+        exit(EXIT_FAILURE);
     }
 
-    // Adjuntar memoria compartida
-    shm_ptr = shmat(shm_id, NULL, 0);
-    if (shm_ptr == (void *) -1) {
-        perror("shmat");
-        exit(1);
+    // Adjuntar la memoria compartida al proceso
+    void *shm_ptr = shmat(shm_id, NULL, 0);
+    if (shm_ptr == (void *)-1) {
+        perror("Error al adjuntar la memoria compartida");
+        exit(EXIT_FAILURE);
     }
 
-    while (1) {
-        char file_path[256];
-        printf("Ingrese la ruta de la imagen BMP: ");
-        scanf("%s", file_path);
+    // Copiar el encabezado BMP a la memoria compartida
+    memcpy(shm_ptr, imageIn, sizeof(BMP_Image));
 
-        BmpImage *image = load_bmp(file_path);
-        if (image == NULL) {
-            continue;
-        }
-
-        // Copiar la imagen a la memoria compartida
-        memcpy(shm_ptr, image, sizeof(BmpImage) + image->header.image_size_bytes);
-        free(image->pixels);
-        free(image);
-
-        printf("Imagen cargada en memoria compartida.\n");
+    // Copiar los datos de los píxeles a la memoria compartida (después del encabezado)
+    void *pixel_ptr = shm_ptr + sizeof(BMP_Image);
+    for (int i = 0; i < imageIn->norm_height; i++) {
+        memcpy(pixel_ptr + (i * imageIn->header.width_px * sizeof(Pixel)),
+               imageIn->pixels[i],
+               imageIn->header.width_px * sizeof(Pixel));
     }
+
+    // Ahora leeremos la imagen de vuelta desde la memoria compartida para verificar que se cargó bien
+
+    // Crear una nueva estructura BMP para almacenar la imagen leída de la memoria compartida
+    BMP_Image *imageOut = (BMP_Image *)malloc(sizeof(BMP_Image));
+    if (imageOut == NULL) {
+        printError(MEMORY_ERROR);
+        exit(EXIT_FAILURE);
+    }
+
+    // Copiar el encabezado BMP desde la memoria compartida
+    memcpy(imageOut, shm_ptr, sizeof(BMP_Image));
+
+    // Asignar memoria para los píxeles de la imagen leída
+    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
+    for (int i = 0; i < imageOut->norm_height; i++) {
+        imageOut->pixels[i] = (Pixel *)malloc(imageOut->header.width_px * sizeof(Pixel));
+        memcpy(imageOut->pixels[i], pixel_ptr + (i * imageOut->header.width_px * sizeof(Pixel)),
+               imageOut->header.width_px * sizeof(Pixel));
+    }
+
+    // Guardar la imagen leída de la memoria compartida en un archivo de salida
+    writeImage("output_shared_memory.bmp", imageOut);
+
+    // Imprimir el ID de la memoria compartida para que otros procesos puedan acceder
+    printf("ID de memoria compartida: %d\n", shm_id);
+
+    // Liberar la memoria local
+    freeImage(imageIn);
+    freeImage(imageOut);
+
+    // Separar el segmento de memoria compartida del proceso
+    shmdt(shm_ptr);
 
     return 0;
 }
-
