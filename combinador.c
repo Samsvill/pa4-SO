@@ -43,15 +43,17 @@ int main(int argc, char *argv[]) {
     pthread_mutex_lock(&(shared_data->mutex));
     printf("mutex lock\n");
     // Esperar a que la mitad 1 esté lista
+    printf("Esperando a que la mitad 1 esté lista\n");
     while (!shared_data->half1_done) {
         pthread_cond_wait(&(shared_data->cond_half1), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 1
     }
-
+    printf("Mitad 1 procesada\n");
+    printf("Esperando a que la mitad 2 esté lista\n");
     // Esperar a que la mitad 2 esté lista
     while (!shared_data->half2_done) {
         pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));  // Bloquearse hasta que se procese la mitad 2
     }
-
+    printf("Mitad 2 procesada\n");
     // Ambas mitades están listas, ahora podemos combinar la imagen
     printf("Ambas mitades procesadas. Escribiendo imagen completa en: %s\n", argv[1]);
 
