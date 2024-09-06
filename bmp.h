@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #ifndef _BMP_H_
 #define _BMP_H_
@@ -60,8 +61,14 @@ typedef struct BMP_Image {
     BMP_Header header;
     int norm_height; //normalized height
     int bytes_per_pixel; // This amount should be equals to number of bits/8
-    Pixel ** pixels;
+    Pixel * pixels;
 } BMP_Image;
+
+typedef struct {
+    pthread_mutex_t mutex;  // Mutex para sincronización entre procesos
+    BMP_Image image;        // Imagen BMP
+    Pixel pixels[];         // Arreglo flexible de píxeles
+} SharedData;
 
 void printError(int error);
 BMP_Image* createBMPImage(FILE* fptr);

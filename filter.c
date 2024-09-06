@@ -38,6 +38,8 @@ void *applyFilter(void *args) {
     BMP_Image *imageOut = tArgs->imageOut;
     int (*filter)[3] = tArgs->filter;
 
+    int width = imageIn->header.width_px;  // El ancho de la imagen
+
     // Sumar los valores del filtro para normalización
     int filterSum = 0;
     for (int x = 0; x < 3; x++) {
@@ -50,7 +52,7 @@ void *applyFilter(void *args) {
     int needsNormalization = (filterSum != 0);  // Solo normalizamos si el filtro lo requiere
 
     for (int row = startRow; row < endRow; row++) {
-        for (int col = 0; col < imageIn->header.width_px; col++) {
+        for (int col = 0; col < width; col++) {
             int sumBlue = 0, sumGreen = 0, sumRed = 0;
 
             // Aplicar el filtro sobre la vecindad 3x3
@@ -61,7 +63,9 @@ void *applyFilter(void *args) {
 
                     if (newRow >= 0 && newRow < abs(imageIn->header.height_px) &&
                         newCol >= 0 && newCol < imageIn->header.width_px) {
-                        Pixel *p = &imageIn->pixels[newRow][newCol];
+                        
+                        // Acceso contiguo a los píxeles con la fórmula: fila * ancho + columna
+                        Pixel *p = &imageIn->pixels[newRow * width + newCol];
                         sumBlue += filter[x + 1][y + 1] * p->blue;
                         sumGreen += filter[x + 1][y + 1] * p->green;
                         sumRed += filter[x + 1][y + 1] * p->red;
@@ -76,14 +80,14 @@ void *applyFilter(void *args) {
                 sumRed /= filterSum;
             }
 
-            // Limitar los valores entre 0 y 255
-            imageOut->pixels[row][col].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
-            imageOut->pixels[row][col].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
-            imageOut->pixels[row][col].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
-            imageOut->pixels[row][col].alpha = 255;  // Asumimos que siempre es opaco
+            // Limitar los valores entre 0 y 255 y escribir en la imagen de salida
+            int pixelIndex = row * width + col;  // Cálculo del índice contiguo
+            imageOut->pixels[pixelIndex].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
+            imageOut->pixels[pixelIndex].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
+            imageOut->pixels[pixelIndex].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
+            imageOut->pixels[pixelIndex].alpha = 255;  // Asumimos que siempre es opaco
         }
     }
+
     pthread_exit(NULL);
 }
-
-

@@ -36,7 +36,7 @@ void readImageData(FILE *srcFile, BMP_Image *image, int dataSize) {
     }
 }
 
-// Función para leer una imagen BMP completa
+// Función para leer una imagen BMP completa, manejando el padding
 BMP_Image *createBMPImage(FILE *fptr) {
     if (fptr == NULL) {
         printError(FILE_ERROR);
@@ -50,31 +50,36 @@ BMP_Image *createBMPImage(FILE *fptr) {
     }
 
     // Leer el encabezado de la imagen
-    fread(&(image->header), sizeof(BMP_Header), 1, fptr);
+    if (fread(&(image->header), sizeof(BMP_Header), 1, fptr) != 1) {
+        printError(FILE_ERROR);
+        exit(EXIT_FAILURE);
+    }
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
-    // Asignar memoria para los píxeles
-    image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
+    // Calcular el tamaño del padding (si el ancho no es múltiplo de 4)
+    int padding = (4 - (image->header.width_px * image->bytes_per_pixel) % 4) % 4;
+
+    // Asignar memoria contigua para todos los píxeles
+    image->pixels = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
 
-    // Leer los píxeles
+    // Leer los píxeles, fila por fila, manejando el padding
     for (int i = 0; i < image->norm_height; i++) {
-        image->pixels[i] = (Pixel *)malloc(image->header.width_px * sizeof(Pixel));
-        if (image->pixels[i] == NULL) {
-            printError(MEMORY_ERROR);
+        if (fread(&image->pixels[i * image->header.width_px], image->bytes_per_pixel, image->header.width_px, fptr) != image->header.width_px) {
+            printError(FILE_ERROR);
             exit(EXIT_FAILURE);
         }
-        fread(image->pixels[i], image->bytes_per_pixel, image->header.width_px, fptr);
+        fseek(fptr, padding, SEEK_CUR);  // Saltar el padding al final de cada fila
     }
 
     return image;
 }
 
-// Función para escribir una imagen BMP en un archivo
+// Función para escribir una imagen BMP en un archivo, manejando el padding
 void writeImage(char *destFileName, BMP_Image *dataImage) {
     FILE *destFile = fopen(destFileName, "wb");
     if (destFile == NULL) {
@@ -83,15 +88,29 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
     }
 
     // Escribir el encabezado
-    fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile);
+    if (fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile) != 1) {
+        printError(FILE_ERROR);
+        fclose(destFile);
+        exit(EXIT_FAILURE);
+    }
 
-    // Escribir los datos de imagen
+    // Calcular el tamaño del padding
+    int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
+    uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
+
+    // Escribir los píxeles fila por fila, agregando el padding necesario
     for (int i = 0; i < dataImage->norm_height; i++) {
-        fwrite(dataImage->pixels[i], sizeof(Pixel), dataImage->header.width_px, destFile);
+        if (fwrite(&dataImage->pixels[i * dataImage->header.width_px], dataImage->bytes_per_pixel, dataImage->header.width_px, destFile) != dataImage->header.width_px) {
+            printError(FILE_ERROR);
+            fclose(destFile);
+            exit(EXIT_FAILURE);
+        }
+        fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
     }
 
     fclose(destFile);
 }
+
 
 // Función para liberar la memoria de una imagen BMP
 void freeImage(BMP_Image *image) {
@@ -99,16 +118,9 @@ void freeImage(BMP_Image *image) {
         return;
     }
 
-    // Liberar la memoria de cada fila de píxeles
-    for (int i = 0; i < image->norm_height; i++) {
-        if (image->pixels[i] != NULL) {
-            free(image->pixels[i]);
-        }
-    }
-
+    // Liberar la memoria de los píxeles
     if (image->pixels != NULL) {
         free(image->pixels);
-        image->pixels = NULL;
     }
 
     free(image);
@@ -122,21 +134,16 @@ BMP_Image *initializeImageOut(BMP_Image *imageIn) {
         exit(EXIT_FAILURE);
     }
 
+    // Copiar el encabezado
     imageOut->header = imageIn->header;
     imageOut->norm_height = abs(imageIn->header.height_px);
     imageOut->bytes_per_pixel = imageIn->header.bits_per_pixel / 8;
-    imageOut->pixels = (Pixel **)malloc(imageOut->norm_height * sizeof(Pixel *));
+
+    // Asignar memoria contigua para los píxeles
+    imageOut->pixels = (Pixel *)malloc(imageOut->norm_height * imageOut->header.width_px * sizeof(Pixel));
     if (imageOut->pixels == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < imageOut->norm_height; i++) {
-        imageOut->pixels[i] = (Pixel *)malloc(imageOut->header.width_px * sizeof(Pixel));
-        if (imageOut->pixels[i] == NULL) {
-            printError(MEMORY_ERROR);
-            exit(EXIT_FAILURE);
-        }
     }
 
     return imageOut;
