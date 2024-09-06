@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     memcpy(shared_data->pixels, image->pixels, image->norm_height * image->header.width_px * sizeof(Pixel));
 
     printf("Imagen compartida\n");
-    
+
     // Liberar la imagen original (ya está copiada en la memoria compartida)
     freeImage(image);
 
@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
     pid_t pid_realzador = fork();
     if (pid_realzador == 0) {
         // Proceso hijo: lanzar el realzador
-        char *args[] = {"./realzador", "half1", argv[3], NULL};
+        //char *args[] = {"./realzador", "half1", argv[3], NULL};
+        char *args[] = {"echo", "half1", argv[3], NULL};
         execvp(args[0], args);
         perror("Error al ejecutar el realzador");
         exit(1);

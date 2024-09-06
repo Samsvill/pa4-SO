@@ -46,7 +46,7 @@ BMP_Image *createBMPImage(FILE *fptr) {
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
     // Calcular el tamaño del padding (si el ancho no es múltiplo de 4)
-    //int padding = (4 - (image->header.width_px * image->bytes_per_pixel) % 4) % 4;
+    int padding = (4 - (image->header.width_px * image->bytes_per_pixel) % 4) % 4;
 
     // Asignar memoria contigua para todos los píxeles
     image->pixels = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
@@ -65,7 +65,7 @@ BMP_Image *createBMPImage(FILE *fptr) {
             printError(FILE_ERROR);
             exit(EXIT_FAILURE);
         }
-    //    fseek(fptr, padding, SEEK_CUR);  // Saltar el padding al final de cada fila
+        fseek(fptr, padding, SEEK_CUR);  // Saltar el padding al final de cada fila
     }
 
     return image;
@@ -87,8 +87,8 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
     }
 
     // Calcular el tamaño del padding
-    //int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
-    //uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
+    int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
+    uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
 
     // Escribir los píxeles fila por fila, agregando el padding necesario
     for (int i = 0; i < dataImage->norm_height; i++) {
@@ -99,7 +99,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
             fclose(destFile);
             exit(EXIT_FAILURE);
         }
-        //fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
+        fwrite(paddingBytes, sizeof(uint8_t), padding, destFile);  // Escribir el padding
     }
 
     fclose(destFile);

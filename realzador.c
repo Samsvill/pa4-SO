@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    printf("Memoria compartida accedida\n");
+    printf("norm_height %d",shared_data->image.norm_height);
     int startRow, endRow;
     if (strcmp(argv[1], "half1") == 0) {
         startRow = 0;
