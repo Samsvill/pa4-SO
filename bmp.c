@@ -24,18 +24,6 @@ void printError(int error) {
     }
 }
 
-// Función para leer los datos de imagen de un archivo BMP
-void readImageData(FILE *srcFile, BMP_Image *image, int dataSize) {
-    int bytesPorPixel = image->header.bits_per_pixel / 8;
-    int paddingSize = (4 - (image->header.width_px * bytesPorPixel) % 4) % 4;
-    uint8_t padding[3] = {0};
-
-    for (int i = 0; i < image->norm_height; i++) {
-        fread(image->pixels[i], bytesPorPixel, image->header.width_px, srcFile);
-        fread(padding, sizeof(uint8_t), paddingSize, srcFile);
-    }
-}
-
 // Función para leer una imagen BMP completa, manejando el padding
 BMP_Image *createBMPImage(FILE *fptr) {
     if (fptr == NULL) {
