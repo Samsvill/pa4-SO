@@ -11,12 +11,12 @@
 #define PATH_NAME "test.bmp"
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Uso: %s <half1|half2> <número_hilos>\n", argv[0]);
+    if (argc != 2) {
+        printf("Uso: %s <número_hilos>\n", argv[0]);
         return 1;
     }
 
-    int numThreads = atoi(argv[2]);
+    int numThreads = atoi(argv[1]);
 
     // Acceder a la memoria compartida (el publicador ya debería haber cargado la imagen)
     key_t key = ftok(PATH_NAME, SHM_KEY);
@@ -34,17 +34,15 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Memoria compartida accedida\n");
-    printf("norm_height %d", shared_data->image.norm_height);
+    printf("norm_height %d\n", shared_data->image.norm_height);
 
-    int startRow, endRow;
-    if (strcmp(argv[1], "half2") == 0) {
-        startRow = abs(shared_data->image.norm_height) / 2;
-        endRow = abs(shared_data->image.norm_height);
-    }
+    // Siempre operar en la segunda mitad de la imagen
+    int startRow = abs(shared_data->image.norm_height) / 2;
+    int endRow = abs(shared_data->image.norm_height);
 
     BMP_Image *imageIn = &(shared_data->image);
 
-    // Usamos directamente la imagen en la memoria compartida para modificarla.
+    // Usar directamente la imagen en la memoria compartida para modificarla
     BMP_Image *imageOut = &(shared_data->image);  
 
     // Inicializar los punteros a las filas en la memoria compartida
@@ -53,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Crear hilos para aplicar el filtro
-    printf("Aplicando filtro en la mitad %s con %d hilos...\n", argv[1], numThreads);
+    printf("Aplicando filtro en la segunda mitad con %d hilos...\n", numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
     int rowsPerThread = (endRow - startRow) / numThreads;
@@ -65,9 +63,10 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = simplifiedSobelFilter;  // El filtro que quieres aplicar
+        threadArgs[i].filter = simplifiedSobelFilter;  // Aplicar el filtro Sobel simplificado
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
+
     printf("Hilos creados\n");
     printf("Esperando a que los hilos terminen...\n");
 
@@ -84,11 +83,10 @@ int main(int argc, char *argv[]) {
     printf("Mutex bloqueado\n");
 
     // Marcar como procesado y enviar la señal correspondiente
-    printf("Marcando como procesado y enviando señal...\n");
-    if (strcmp(argv[1], "half2") == 0) {
-        shared_data->half2_done = 1;
-        pthread_cond_signal(&(shared_data->cond_half2));
-    }
+    printf("Marcando como procesado y enviando señal para la segunda mitad...\n");
+    shared_data->half2_done = 1;
+    pthread_cond_signal(&(shared_data->cond_half2));
+
     printf("Listo\n");
 
     // Desbloquear el mutex
