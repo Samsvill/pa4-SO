@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "filter.h": "c",
+        "bmp.h": "c"
+    }
+}
