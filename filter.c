@@ -52,7 +52,7 @@ void *applyFilter(void *args) {
     int needsNormalization = (filterSum != 0);  // Solo normalizamos si el filtro lo requiere
 
     for (int row = startRow; row < endRow; row++) {
-        for (int col = 0; col < width; col++) {
+        for (int col = 0; col < imageIn->header.width_px; col++) {
             int sumBlue = 0, sumGreen = 0, sumRed = 0;
 
             // Aplicar el filtro sobre la vecindad 3x3
@@ -63,7 +63,7 @@ void *applyFilter(void *args) {
 
                     // Verificar si los índices están dentro de los límites de la imagen
                     if (newRow >= 0 && newRow < abs(imageIn->header.height_px) &&
-                        newCol >= 0 && newCol < width) {
+                        newCol >= 0 && newCol < imageIn->header.width_px) {
                         
                         // Acceso contiguo a los píxeles con la fórmula: fila * ancho + columna
                         Pixel *p = &imageIn->pixels[newRow * width + newCol];
