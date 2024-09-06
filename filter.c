@@ -61,8 +61,9 @@ void *applyFilter(void *args) {
                     int newRow = row + x;
                     int newCol = col + y;
 
+                    // Verificar si los índices están dentro de los límites de la imagen
                     if (newRow >= 0 && newRow < abs(imageIn->header.height_px) &&
-                        newCol >= 0 && newCol < imageIn->header.width_px) {
+                        newCol >= 0 && newCol < width) {
                         
                         // Acceso contiguo a los píxeles con la fórmula: fila * ancho + columna
                         Pixel *p = &imageIn->pixels[newRow * width + newCol];
