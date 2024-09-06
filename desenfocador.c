@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = blurFilter;  // El filtro que quieres aplicar
+        threadArgs[i].filter = simplifiedSobelFilter;  // El filtro que quieres aplicar
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
     printf("Hilos creados\n");
@@ -91,9 +91,6 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[1], "half1") == 0) {
         shared_data->half1_done = 1;
         pthread_cond_signal(&(shared_data->cond_half1));
-    } else {
-        shared_data->half2_done = 1;
-        pthread_cond_signal(&(shared_data->cond_half2));
     }
     printf("Listo\n");
 

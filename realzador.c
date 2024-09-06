@@ -37,10 +37,7 @@ int main(int argc, char *argv[]) {
     printf("norm_height %d", shared_data->image.norm_height);
 
     int startRow, endRow;
-    if (strcmp(argv[1], "half1") == 0) {
-        startRow = 0;
-        endRow = abs(shared_data->image.norm_height) / 2;
-    } else {
+    if (strcmp(argv[1], "half2") == 0) {
         startRow = abs(shared_data->image.norm_height) / 2;
         endRow = abs(shared_data->image.norm_height);
     }
