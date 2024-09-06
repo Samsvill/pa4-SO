@@ -51,7 +51,9 @@ int main(int argc, char *argv[]) {
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
     int rowsPerThread = endRow - startRow / numThreads;
+    printf("Filas por hilo: %d\n", rowsPerThread);
 
+    printf("Creando hilos...\n");
     for (int i = 0; i < numThreads; i++) {
         threadArgs[i].startRow = startRow + i * rowsPerThread;
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
@@ -60,17 +62,23 @@ int main(int argc, char *argv[]) {
         threadArgs[i].filter = (strcmp(argv[0], "./realzador") == 0) ? simplifiedSobelFilter : blurFilter;
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
-
+    printf("Hilos creados\n");
+    printf("Esperando a que los hilos terminen...\n");
     // Esperar a que todos los hilos terminen
     for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
     }
+    printf("Hilos terminados\n");
 
+    printf("Escribiendo imagen de salida...\n");
     // Bloquear el mutex antes de escribir en la memoria compartida
+    printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));
-
+    printf("Mutex bloqueado\n");
     printf("Escribiendo en la memoria compartida...\n");
+
     // Copiar los píxeles procesados de nuevo a la memoria compartida
+    printf("Copiando píxeles...\n");
     memcpy(&shared_data->pixels[startRow * imageIn->header.width_px],
            &imageOut->pixels[startRow * imageIn->header.width_px],
            (endRow - startRow) * imageIn->header.width_px * sizeof(Pixel));
