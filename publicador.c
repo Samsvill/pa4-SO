@@ -93,8 +93,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Liberar la imagen original (ya está copiada en la memoria compartida)
-    freeImage(image);
-
+    
     // PRUEBA: Escribir la imagen directamente desde la memoria compartida a un archivo BMP
     printf("Escribiendo la imagen copiada directamente desde la memoria compartida para verificar...\n");
     writeImage("imagen_copiada.bmp", &(shared_data->image));
@@ -152,6 +151,6 @@ int main(int argc, char *argv[]) {
 //    // Desconectar y liberar la memoria compartida
 //    shmdt(shared_data);
 //    shmctl(shmid, IPC_RMID, NULL);  // Eliminar la memoria compartida
-
+    freeImage(image);
     return 0;
 }
