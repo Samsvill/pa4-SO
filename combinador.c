@@ -41,27 +41,28 @@ int main(int argc, char *argv[])
     printf("Estado inicial de half2_done: %d\n", shared_data->half2_done);
 
     // Bloquear el mutex antes de esperar la condición
-    pthread_mutex_lock(&(shared_data->mutex));
-    printf("Mutex bloqueado\n");
 
     // Esperar a que la segunda mitad esté lista
     printf("Esperando a que la segunda mitad esté lista...\n");
-    while (!shared_data->half2_done) {
-        printf("Todavía esperando la segunda mitad...\n");
-        pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));
+    while (!shared_data->half2_done || shared_data->half1_done) {
+        printf("Todavía esperando a que terminen...\n");
+        //pthread_cond_wait(&(shared_data->cond_half2), &(shared_data->mutex));
     }
 
     // Verificar el estado final de half2_done
     printf("Estado final de half2_done: %d\n", shared_data->half2_done);
 
-    // Desbloquear el mutex
-    pthread_mutex_unlock(&(shared_data->mutex));
-    printf("Mutex desbloqueado\n");
+    pthread_mutex_lock(&(shared_data->mutex));
+    printf("Mutex bloqueado\n");
+
 
     // Guardar la imagen final en un archivo BMP
     printf("Guardando la imagen final en %s...\n", output_file);
     writeImage(output_file, &(shared_data->image));
     printf("Imagen guardada exitosamente.\n");
+
+    pthread_mutex_unlock(&(shared_data->mutex));
+    printf("Mutex desbloqueado\n");
 
     // Desconectar de la memoria compartida
     shmdt(shared_data);
