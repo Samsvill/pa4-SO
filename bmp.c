@@ -126,7 +126,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
         printf(
             "Escribiendo fila %d de %d píxeles, bytes por pixel: %d, ancho: %d\n",
             i, dataImage->header.width_px, bytes_pixel, width
-        )
+        );
 
         if (fwrite(pixels, bytes_pixel, width, destFile) != width) {
             printError(FILE_ERROR);
