@@ -46,6 +46,14 @@ BMP_Image *createBMPImage(FILE *fptr)
 
     fread(&(image->header), sizeof(BMP_Header), 1, fptr);
 
+    printf("BMP Header:\n");
+printf("Type: %x\n", image->header.type); // Debe ser 0x4D42
+printf("Size: %d\n", image->header.size);
+printf("Offset: %d\n", image->header.offset);
+printf("Width: %d\n", image->header.width_px);
+printf("Height: %d\n", image->header.height_px);
+printf("Bits per pixel: %d\n", dataImage->header.bits_per_pixel);
+
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
@@ -103,6 +111,13 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
         exit(EXIT_FAILURE);
     }
 
+    printf("BMP Header:\n");
+printf("Type: %x\n", dataImage->header.type); // Debe ser 0x4D42
+printf("Size: %d\n", dataImage->header.size);
+printf("Offset: %d\n", dataImage->header.offset);
+printf("Width: %d\n", dataImage->header.width_px);
+printf("Height: %d\n", dataImage->header.height_px);
+printf("Bits per pixel: %d\n", dataImage->header.bits_per_pixel);
     // Calcular el tamaño del padding (relleno)
     int width = dataImage->header.width_px;
     int height = abs(dataImage->header.height_px); // Usar siempre positivo
