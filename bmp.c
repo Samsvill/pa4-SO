@@ -117,9 +117,6 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
     {
         Pixel *pixels = &dataImage->pixels_data[i * width];
 
-        // Depuración: Imprimir información de la fila que se está escribiendo
-        printf("Escribiendo fila %d con %d píxeles en dirección %p\n", i, width, (void *)pixels);
-
         if (pixels == NULL)
         {
             printError(MEMORY_ERROR);
