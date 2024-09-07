@@ -101,7 +101,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
     }
 
     // Escribir el encabezado
-    if (fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile) != 1)
+    if (fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile) != 1 || isValidHeader(&dataImage->header) == 0)
     {
         printError(FILE_ERROR);
         fclose(destFile);
@@ -217,4 +217,28 @@ BMP_Image *initializeImageOut(BMP_Image *imageIn)
     }
 
     return imageOut;
+}
+
+// Funcion para verificar si un encabezado de BMP es válido e imprime el mesnaje de error correspondiente
+int isValidHeader(BMP_Header *header)
+{
+    if (header->type != 0x4D42)
+    {
+        printf("Error: Invalid BMP file type\n");
+        return 0;
+    }
+
+    if (header->bits_per_pixel != 24)
+    {
+        printf("Error: Invalid BMP file bits_per_pixel\n");
+        return 0;
+    }
+
+    if (header->compression != 0)
+    {
+        printf("Error: Invalid BMP file compression\n");
+        return 0;
+    }
+
+    return 1;
 }
