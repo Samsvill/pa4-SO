@@ -75,27 +75,21 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[i], NULL);
     }
     printf("Hilos terminados\n");
-
     printf("Escribiendo imagen de salida...\n");
     // Bloquear el mutex antes de escribir en la memoria compartida
     printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));
     printf("Mutex bloqueado\n");
-
     // Marcar como procesado y enviar la señal correspondiente
     printf("Marcando como procesado y enviando señal para la segunda mitad...\n");
     shared_data->half2_done = 1;
     pthread_cond_signal(&(shared_data->cond_half2));
-
     printf("Listo\n");
-
     // Desbloquear el mutex
     printf("Desbloqueando mutex...\n");
     pthread_mutex_unlock(&(shared_data->mutex));
     printf("Mutex desbloqueado\n");
-
     // Desconectar de la memoria compartida
     shmdt(shared_data);
-
     return 0;
 }

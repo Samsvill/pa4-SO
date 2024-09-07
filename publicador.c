@@ -57,18 +57,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // Inicializar el mutex
-    pthread_mutexattr_t mutex_attr;
-    pthread_mutexattr_init(&mutex_attr);
-    pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);
-    pthread_mutex_init(&(shared_data->mutex), &mutex_attr);
-
-    // Inicializar las condiciones
-    pthread_condattr_t cond_attr;
-    pthread_condattr_init(&cond_attr);
-    pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_SHARED);
-    pthread_cond_init(&(shared_data->cond_half1), &cond_attr);
-    pthread_cond_init(&(shared_data->cond_half2), &cond_attr);
+    // Inicializar el mutex y las condiciones
+    pthread_mutex_init(&(shared_data->mutex), NULL);
+    pthread_cond_init(&(shared_data->cond_half1), NULL);
+    pthread_cond_init(&(shared_data->cond_half2), NULL);
 
     // Inicializar los estados de procesamiento
     shared_data->half1_done = 0;
@@ -85,7 +77,7 @@ int main(int argc, char *argv[]) {
         memcpy(&shared_data->pixels[i * image->header.width_px], 
                &image->pixels_data[i * image->header.width_px], 
                image->header.width_px * sizeof(Pixel));
-    
+
         // Agregar impresión de depuración:
         printf("Copiando fila %d: ", i);
         for (int j = 0; j < image->header.width_px; j++) {
