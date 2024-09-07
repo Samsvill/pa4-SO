@@ -33,33 +33,24 @@ BMP_Image* createBMPImage(FILE* fptr) {
 
     printf("Entrando al malloc de image\n");
     BMP_Image *image = (BMP_Image *)malloc(sizeof(BMP_Image));
-    printf("BMP Image size disponible desde 0: %d\n", sizeof(BMP_Image));
+    printf("BMP Image size disponible desde 0: %d\n", sizeof(image));
     
     if (image == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
 
-    //printf("Entrando al fread de header\n");
-    // Leer el encabezado
     fread(&(image->header), sizeof(BMP_Header), 1, fptr);
-    //printf("Header size: %d\n", sizeof(BMP_Header));
-
-    //printf("height: %d\n", image->header.height_px);
-    //printf("norm height: %d\n", abs(image->header.height_px));
-    //printf("bytes per pixel: %d\n", image->header.bits_per_pixel / 8);
 
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
-    //printf("Entrando al malloc de pixels_data\n");
-    //printf("Image size: %d x %d\n", image->header.width_px, image->norm_height);
-    //printf("Bits per pixel: %d\n", image->header.bits_per_pixel);
+    printf("Header information:\n");
+    printf("  Width: %d px\n", image->header.width_px);
+    printf("  Height: %d px\n", image->header.height_px);
+    printf("  Bits per pixel: %d\n", image->header.bits_per_pixel);
+    printf("  File size: %d bytes\n", image->header.size);
 
-    //printf("ANTES DEL MALLOC-----------------------------------------------------------------\n \n");
-    // Asignar memoria para todos los píxeles de la imagen en un bloque contiguo
-    //printf("Size de un solo pixel: %zu\n", sizeof(Pixel));
-    //printf("Malloc size calculado: %zu\n", image->norm_height * image->header.width_px * sizeof(Pixel));
     if (image->norm_height <= 0 || image->header.width_px <= 0) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
@@ -70,13 +61,7 @@ BMP_Image* createBMPImage(FILE* fptr) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
-    // Inicializar los píxeles a 0
-    //printf("Entrando al malloc de pixels ------------------------------------------------------\n \n");
-    //printf("norm height: %d\n", image->norm_height);
-    //printf("size of pixel: %d\n", sizeof(Pixel));
-    //printf("Malloc size: %d\n", abs(image->norm_height) * sizeof(Pixel *));
     
-    // Asignar memoria para el doble puntero `pixels` (para las filas)
     image->pixels = (Pixel **)malloc(image->norm_height * sizeof(Pixel *));
     if (image->pixels == NULL) {
         printError(MEMORY_ERROR);
@@ -112,18 +97,19 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
         exit(EXIT_FAILURE);
     }
 
-    // Calcular el tamaño del padding
-    int bytesPerPixel = dataImage->bytes_per_pixel;
+    // Calcular el tamaño del padding (relleno)
     int width = dataImage->header.width_px;
+    int height = abs(dataImage->header.height_px);  // Usar siempre positivo
+    int bytesPerPixel = dataImage->bytes_per_pixel;
     int padding = (4 - (width * bytesPerPixel) % 4) % 4;
     uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
 
-    // Escribir los píxeles fila por fila
-    for (int i = dataImage->norm_height - 1; i >= 0; i--) {
-        Pixel *pixels = &dataImage->pixels_data[i * width];
-        
-        // Escribir la fila de píxeles
-        if (fwrite(pixels, bytesPerPixel, width, destFile) != width) {
+    // Escribir los píxeles directamente desde el bloque de memoria contigua
+    Pixel *pixels = dataImage->pixels_data;
+
+    for (int i = height - 1; i >= 0; i--) {  // La imagen BMP empieza desde la última fila
+        // Escribir la fila de píxeles completa
+        if (fwrite(&pixels[i * width], bytesPerPixel, width, destFile) != width) {
             printError(FILE_ERROR);
             fclose(destFile);
             exit(EXIT_FAILURE);
@@ -141,6 +127,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
 
     fclose(destFile);
 }
+
 
 
 
