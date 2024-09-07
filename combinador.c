@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/ipc.h>
 #include <pthread.h>
 #include <sys/shm.h>
 #include "bmp.h"
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
     while (shared_data->half1_done == 0 || shared_data->half2_done == 0)
     {
         printf("Esperando a que ambos procesos terminen...\n");
-        sleep(1);
+        sleep(1); //porsiacaso
     }
     
     
