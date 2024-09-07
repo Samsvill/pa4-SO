@@ -119,9 +119,11 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
     Pixel *pixels = dataImage->pixels_data;
 
     for (int i = 0; i < height; i++)
-    { // La imagen BMP empieza desde la primera fila
-        // Escribir la fila de píxeles completa
+    {
         Pixel *pixels = &dataImage->pixels_data[i * width];
+
+        // Depuración: Imprimir información de la fila que se está escribiendo
+        printf("Escribiendo fila %d con %d píxeles en dirección %p\n", i, width, (void *)pixels);
 
         if (pixels == NULL)
         {
@@ -130,8 +132,6 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
             exit(EXIT_FAILURE);
         }
 
-        printf("Escribiendo fila %d con %d píxeles\n", i, width);
-
         if (fwrite(pixels, bytesPerPixel, width, destFile) != width)
         {
             printError(FILE_ERROR);
@@ -139,7 +139,6 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
             exit(EXIT_FAILURE);
         }
 
-        // Verificar el padding
         if (padding > 0)
         {
             if (fwrite(paddingBytes, 1, padding, destFile) != padding)
