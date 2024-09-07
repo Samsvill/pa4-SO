@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     if (pid_desenfocador == 0) {
         // Proceso hijo: lanzar el desenfocador
         printf("Lanzando desenfocador...\n");
-        char *args[] = {"./desenfocador", shmid, argv[4], NULL};  // Número de hilos argv[4]
+        char *args[] = {"./desenfocador", argv[4], NULL};  // Número de hilos argv[4]
         execvp(args[0], args);
         perror("Error al ejecutar el desenfocador");
         exit(1);
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
     if (pid_realzador == 0) {
         // Proceso hijo: lanzar el realzador
         printf("Lanzando realzador...\n");
-        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
+        char *args[] = {"./realzador", argv[3], NULL};  // Número de hilos argv[3]
         execvp(args[0], args);
         perror("Error al ejecutar el realzador");
         exit(1);

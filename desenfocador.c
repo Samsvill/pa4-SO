@@ -7,17 +7,30 @@
 #include "bmp.h"
 #include "filter.h"
 
+#define SHM_KEY 1234  // Clave para la memoria compartida
+#define PATH_NAME "test.bmp"
+
 int main(int argc, char *argv[]) {
     // Verificar argumentos
-    if (argc != 3) {
-        fprintf(stderr, "Uso: %s <shmid> <numThreads>\n", argv[0]);
+    if (argc != 2) {
+        fprintf(stderr, "Uso: %s <numThreads>\n", argv[0]);
         return 1;
     }
 
-    int shmid = atoi(argv[1]);
+    
     int numThreads = atoi(argv[2]);
 
     // Adjuntar la memoria compartida
+    key_t key = ftok(PATH_NAME, SHM_KEY);
+    if (key == -1) {
+        perror("Error al generar la clave con ftok");
+        return 1;
+    }
+    int shmid = shmget(key, sizeof(SharedData), 0666 | IPC_CREAT);
+    if (shmid < 0) {
+        perror("Error al acceder a la memoria compartida");
+        return 1;
+    }
     SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
     if (shared_data == (SharedData *)-1) {
         perror("Error al adjuntar la memoria compartida");
