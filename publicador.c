@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     pid_t pid_combinador = fork();
     if (pid_combinador == 0) {
         printf("Dentro del hilo del combinador\n");
-        char *args[] = {"./combinador", shmid, argv[2], NULL};  // Guardar el resultado en argv[2]
+        char *args[] = {"./combinador", argv[2], NULL};  // Guardar el resultado en argv[2]
         execvp(args[0], args);
         perror("Error al ejecutar el combinador");
         exit(1);
