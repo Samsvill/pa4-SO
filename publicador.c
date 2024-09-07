@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     pid_t pid_realzador = fork();
     if (pid_realzador == 0) {
         // Proceso hijo: lanzar el realzador
-        char *args[] = {"./realzador", argv[3], NULL};  // Número de hilos argv[3]
+        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
         execvp(args[0], args);
         perror("Error al ejecutar el realzador");
         exit(1);
