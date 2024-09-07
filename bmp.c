@@ -52,7 +52,7 @@ printf("Size: %d\n", image->header.size);
 printf("Offset: %d\n", image->header.offset);
 printf("Width: %d\n", image->header.width_px);
 printf("Height: %d\n", image->header.height_px);
-printf("Bits per pixel: %d\n", dataImage->header.bits_per_pixel);
+printf("Bits per pixel: %d\n", image->header.bits_per_pixel);
 
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
