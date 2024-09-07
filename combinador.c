@@ -6,12 +6,13 @@
 
 int main(int argc, char *argv[]) {
     // Verificar argumentos
-    if (argc != 2) {
-        fprintf(stderr, "Uso: %s <shmid>\n", argv[0]);
+    if (argc != 3) {
+        fprintf(stderr, "Uso: %s <shmid> <output_file>\n", argv[0]);
         return 1;
     }
 
     int shmid = atoi(argv[1]);
+    char *output_file = argv[2];
 
     // Adjuntar la memoria compartida
     SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
@@ -42,6 +43,11 @@ int main(int argc, char *argv[]) {
     // Desbloquear el mutex
     pthread_mutex_unlock(&(shared_data->mutex));
     printf("Mutex desbloqueado\n");
+
+    // Guardar la imagen final en un archivo BMP
+    printf("Guardando la imagen final en %s...\n", output_file);
+    writeImage(output_file, &(shared_data->image));
+    printf("Imagen guardada exitosamente.\n");
 
     // Desconectar de la memoria compartida
     shmdt(shared_data);

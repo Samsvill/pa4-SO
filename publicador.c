@@ -103,21 +103,21 @@ int main(int argc, char *argv[]) {
     // Después de esta prueba, el flujo sigue normalmente:
 
     // Crear un proceso hijo para lanzar el realzador
-    pid_t pid_realzador = fork();
-    if (pid_realzador == 0) {
-        // Proceso hijo: lanzar el realzador
-        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
-        execvp(args[0], args);
-        perror("Error al ejecutar el realzador");
-        exit(1);
-    }
-
     pid_t pid_desenfocador = fork();
     if (pid_desenfocador == 0) {
         // Proceso hijo: lanzar el desenfocador
         char *args[] = {"./desenfocador", shmid, argv[4], NULL};  // Número de hilos argv[4]
         execvp(args[0], args);
         perror("Error al ejecutar el desenfocador");
+        exit(1);
+    }
+
+    pid_t pid_realzador = fork();
+    if (pid_realzador == 0) {
+        // Proceso hijo: lanzar el realzador
+        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
+        execvp(args[0], args);
+        perror("Error al ejecutar el realzador");
         exit(1);
     }
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     pid_t pid_combinador = fork();
     if (pid_combinador == 0) {
         printf("Dentro del hilo del combinador\n");
-        char *args[] = {"./combinador", argv[2], NULL};  // Guardar el resultado en argv[2]
+        char *args[] = {"./combinador", shmid, argv[2], NULL};  // Guardar el resultado en argv[2]
         execvp(args[0], args);
         perror("Error al ejecutar el combinador");
         exit(1);
