@@ -58,13 +58,15 @@ BMP_Image* createBMPImage(FILE* fptr) {
 
     printf("ANTES DEL MALLOC-----------------------------------------------------------------\n \n");
     // Asignar memoria para todos los píxeles de la imagen en un bloque contiguo
-    printf("Size de un solo pixel: %d\n", sizeof(Pixel));
-    printf("Malloc size calculado: %d\n", image->norm_height * image->header.width_px * sizeof(Pixel));
-    printf("Cuanto pesa de verdad un pixels_data: %d\n", sizeof(image->pixels_data));
-    image->pixels_data = (Pixel *)calloc(image->norm_height * image->header.width_px * sizeof(Pixel));
-    //memset(image->pixels_data, 0, image->norm_height * image->header.width_px * sizeof(Pixel));
-    
-    if (image->pixels_data == NULL || sizeof(image->pixels_data) == 0 || sizeof(image->pixels_data) != image->norm_height * image->header.width_px * sizeof(Pixel)) {
+    printf("Size de un solo pixel: %zu\n", sizeof(Pixel));
+    printf("Malloc size calculado: %zu\n", image->norm_height * image->header.width_px * sizeof(Pixel));
+    if (image->norm_height <= 0 || image->header.width_px <= 0) {
+        printError(MEMORY_ERROR);
+        exit(EXIT_FAILURE);
+    }
+    image->pixels_data = (Pixel *)malloc(image->norm_height * image->header.width_px * sizeof(Pixel));
+
+    if (image->pixels_data == NULL) {
         printError(MEMORY_ERROR);
         exit(EXIT_FAILURE);
     }
