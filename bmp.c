@@ -96,7 +96,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage)
     }
 
     // Escribir el encabezado
-    if (fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile) != 1 || isValidHeader(&dataImage->header) == 0)
+    if (fwrite(&(dataImage->header), sizeof(BMP_Header), 1, destFile) != 1)
     {
         printError(FILE_ERROR);
         fclose(destFile);
