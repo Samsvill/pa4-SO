@@ -118,7 +118,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
 
     // Escribir los píxeles directamente desde `pixels_data`
     for (int i = 0; i < dataImage->norm_height; i++) {
-        printf("Escribiendo fila %d de %d píxeles\n", i, dataImage->header.width_px);
+        //printf("Escribiendo fila %d de %d píxeles\n", i, dataImage->header.width_px);
         if (fwrite(&dataImage->pixels_data[i * dataImage->header.width_px], 
                     dataImage->bytes_per_pixel, 
                     dataImage->header.width_px, 
@@ -136,12 +136,12 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
         }
 
         // Depuración: imprimir la fila que se está escribiendo
-        printf("Escribiendo fila %d: ", i);
-        for (int j = 0; j < dataImage->header.width_px; j++) {
-            Pixel *p = &dataImage->pixels_data[i * dataImage->header.width_px + j];
-            printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
-        }
-        printf("\n");
+        //printf("Escribiendo fila %d: ", i);
+        //for (int j = 0; j < dataImage->header.width_px; j++) {
+        //    Pixel *p = &dataImage->pixels_data[i * dataImage->header.width_px + j];
+        //    printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
+        //}
+        //printf("\n");
     }
 
     fclose(destFile);
