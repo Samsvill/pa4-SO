@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     
     
     printf("Guardando la imagen final en %s...\n", output_file);
-    writeImage(output_file, &(shared_data->image));
+    writeImage("output.bmp", &(shared_data->image));
     printf("Imagen guardada exitosamente.\n");
 
     // Desconectar de la memoria compartida
