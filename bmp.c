@@ -107,7 +107,7 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
     // Escribir los píxeles directamente desde el bloque de memoria contigua
     Pixel *pixels = dataImage->pixels_data;
 
-    for (int i = height - 1; i >= 0; i--) {  // La imagen BMP empieza desde la última fila
+    for (int i = 0; i < height; i++) {  // La imagen BMP empieza desde la primera fila
         // Escribir la fila de píxeles completa
         if (fwrite(&pixels[i * width], bytesPerPixel, width, destFile) != width) {
             printError(FILE_ERROR);
