@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     waitpid(pid_desenfocador, NULL, 0);
+    shared_data->half1_done = 1;
     printf("Desenfocador terminó--------------------------------------------------------\n");
 
     pid_t pid_realzador = fork();
@@ -125,7 +126,7 @@ int main(int argc, char *argv[]) {
     }
     waitpid(pid_realzador, NULL, 0);
     printf("Realzador terminó--------------------------------------------------------\n");
-    
+    shared_data->half2_done = 1;
     // Después de que ambos hayan terminado, lanzar el combinador
     printf("Lanzando combinador\n");
     pid_t pid_combinador = fork();
