@@ -79,12 +79,12 @@ int main(int argc, char *argv[]) {
                image->header.width_px * sizeof(Pixel));
 
         // Agregar impresión de depuración:
-        printf("Copiando fila %d: ", i);
-        for (int j = 0; j < image->header.width_px; j++) {
-            Pixel *p = &image->pixels_data[i * image->header.width_px + j];
-            printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
-        }
-        printf("\n");
+        //printf("Copiando fila %d: ", i);
+        //for (int j = 0; j < image->header.width_px; j++) {
+        //    Pixel *p = &image->pixels_data[i * image->header.width_px + j];
+        //    printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
+        //}
+        //printf("\n");
     }
 
     // Asignar las filas a los punteros del doble puntero `pixels`
@@ -122,11 +122,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Esperar a que ambos procesos terminen
-    printf("Esperando realzador\n");
-    waitpid(pid_realzador, NULL, 0);
-    printf("Realzador terminó, esperando desenfocador\n");
+    printf("Esperando desenfocador...\n");
     waitpid(pid_desenfocador, NULL, 0);
-    printf("Desenfocador terminó\n");
+    printf("Desenfocador terminó--------------------------------------------------------\n");
+    printf("Esperando realzador...\n");
+    waitpid(pid_realzador, NULL, 0);
+    printf("Realzador terminó--------------------------------------------------------\n");
 
     // Después de que ambos hayan terminado, lanzar el combinador
     printf("Lanzando combinador\n");
