@@ -98,59 +98,59 @@ int main(int argc, char *argv[]) {
     printf("Escribiendo la imagen copiada directamente desde la memoria compartida para verificar...\n");
     writeImage("imagen_copiada.bmp", &(shared_data->image));
     printf("Imagen copiada correctamente a 'imagen_copiada.bmp'\n");
-//
-//    // Después de esta prueba, el flujo sigue normalmente:
-//
-//    // Crear un proceso hijo para lanzar el realzador
-//    pid_t pid_desenfocador = fork();
-//    if (pid_desenfocador == 0) {
-//        // Proceso hijo: lanzar el desenfocador
-//        char *args[] = {"./desenfocador", shmid, argv[4], NULL};  // Número de hilos argv[4]
-//        execvp(args[0], args);
-//        perror("Error al ejecutar el desenfocador");
-//        exit(1);
-//    }
-//
-//    pid_t pid_realzador = fork();
-//    if (pid_realzador == 0) {
-//        // Proceso hijo: lanzar el realzador
-//        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
-//        execvp(args[0], args);
-//        perror("Error al ejecutar el realzador");
-//        exit(1);
-//    }
-//
-//    // Esperar a que ambos procesos terminen
-//    printf("Esperando desenfocador...\n");
-//    waitpid(pid_desenfocador, NULL, 0);
-//    printf("Desenfocador terminó--------------------------------------------------------\n");
-//    printf("Esperando realzador...\n");
-//    waitpid(pid_realzador, NULL, 0);
-//    printf("Realzador terminó--------------------------------------------------------\n");
-//
-//    // Después de que ambos hayan terminado, lanzar el combinador
-//    printf("Lanzando combinador\n");
-//    pid_t pid_combinador = fork();
-//    if (pid_combinador == 0) {
-//        printf("Dentro del hilo del combinador\n");
-//        char *args[] = {"./combinador", shmid, argv[2], NULL};  // Guardar el resultado en argv[2]
-//        execvp(args[0], args);
-//        perror("Error al ejecutar el combinador");
-//        exit(1);
-//    }
-//
-//    // Esperar a que el combinador termine
-//    waitpid(pid_combinador, NULL, 0);
-//    printf("Combinador terminó\n");
-//
-//    // Destruir el mutex y liberar recursos
-//    pthread_mutex_destroy(&(shared_data->mutex));
-//    pthread_cond_destroy(&(shared_data->cond_half1));
-//    pthread_cond_destroy(&(shared_data->cond_half2));
-//
-//    // Desconectar y liberar la memoria compartida
-//    shmdt(shared_data);
-//    shmctl(shmid, IPC_RMID, NULL);  // Eliminar la memoria compartida
+
+    // Después de esta prueba, el flujo sigue normalmente:
+
+    // Crear un proceso hijo para lanzar el realzador
+    pid_t pid_desenfocador = fork();
+    if (pid_desenfocador == 0) {
+        // Proceso hijo: lanzar el desenfocador
+        char *args[] = {"./desenfocador", shmid, argv[4], NULL};  // Número de hilos argv[4]
+        execvp(args[0], args);
+        perror("Error al ejecutar el desenfocador");
+        exit(1);
+    }
+
+    pid_t pid_realzador = fork();
+    if (pid_realzador == 0) {
+        // Proceso hijo: lanzar el realzador
+        char *args[] = {"./realzador", shmid, argv[3], NULL};  // Número de hilos argv[3]
+        execvp(args[0], args);
+        perror("Error al ejecutar el realzador");
+        exit(1);
+    }
+
+    // Esperar a que ambos procesos terminen
+    printf("Esperando desenfocador...\n");
+    waitpid(pid_desenfocador, NULL, 0);
+    printf("Desenfocador terminó--------------------------------------------------------\n");
+    printf("Esperando realzador...\n");
+    waitpid(pid_realzador, NULL, 0);
+    printf("Realzador terminó--------------------------------------------------------\n");
+
+    // Después de que ambos hayan terminado, lanzar el combinador
+    printf("Lanzando combinador\n");
+    pid_t pid_combinador = fork();
+    if (pid_combinador == 0) {
+        printf("Dentro del hilo del combinador\n");
+        char *args[] = {"./combinador", shmid, argv[2], NULL};  // Guardar el resultado en argv[2]
+        execvp(args[0], args);
+        perror("Error al ejecutar el combinador");
+        exit(1);
+    }
+
+    // Esperar a que el combinador termine
+    waitpid(pid_combinador, NULL, 0);
+    printf("Combinador terminó\n");
+
+    // Destruir el mutex y liberar recursos
+    pthread_mutex_destroy(&(shared_data->mutex));
+    pthread_cond_destroy(&(shared_data->cond_half1));
+    pthread_cond_destroy(&(shared_data->cond_half2));
+
+    // Desconectar y liberar la memoria compartida
+    shmdt(shared_data);
+    shmctl(shmid, IPC_RMID, NULL);  // Eliminar la memoria compartida
     freeImage(image);
     return 0;
 }
