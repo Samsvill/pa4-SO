@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     }
 
     
-    int numThreads = atoi(argv[2]);
+    int numThreads = atoi(argv[1]);
 
     // Adjuntar la memoria compartida
     key_t key = ftok(PATH_NAME, SHM_KEY);
@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
     printf("norm_height %d\n", shared_data->image.norm_height);
 
     // Siempre operar en la segunda mitad de la imagen
-    int startRow = abs(shared_data->image.norm_height) / 2;
-    int endRow = abs(shared_data->image.norm_height);
+    int startRow = 0;
+    int endRow = abs(shared_data->image.norm_height) / 2;
 
     BMP_Image *imageIn = &(shared_data->image);
 

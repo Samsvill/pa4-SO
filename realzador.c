@@ -7,36 +7,31 @@
 #include "bmp.h"
 #include "filter.h"
 
-#define SHM_KEY 1234 // Clave para la memoria compartida
+#define SHM_KEY 1234  // Clave para la memoria compartida
 #define PATH_NAME "test.bmp"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Verificar argumentos
-    if (argc != 2)
-    {
+    if (argc != 2) {
         fprintf(stderr, "Uso: %s <numThreads>\n", argv[0]);
         return 1;
     }
 
-    int numThreads = atoi(argv[2]);
+    int numThreads = atoi(argv[1]);
 
     // Adjuntar la memoria compartida
     key_t key = ftok(PATH_NAME, SHM_KEY);
-    if (key == -1)
-    {
+    if (key == -1) {
         perror("Error al generar la clave con ftok");
         return 1;
     }
     int shmid = shmget(key, sizeof(SharedData), 0666 | IPC_CREAT);
-    if (shmid < 0)
-    {
+    if (shmid < 0) {
         perror("Error al acceder a la memoria compartida");
         return 1;
     }
     SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
-    if (shared_data == (SharedData *)-1)
-    {
+    if (shared_data == (SharedData *)-1) {
         perror("Error al adjuntar la memoria compartida");
         return 1;
     }
@@ -51,11 +46,10 @@ int main(int argc, char *argv[])
     BMP_Image *imageIn = &(shared_data->image);
 
     // Usar directamente la imagen en la memoria compartida para modificarla
-    BMP_Image *imageOut = &(shared_data->image);
+    BMP_Image *imageOut = &(shared_data->image);  
 
     // Inicializar los punteros a las filas en la memoria compartida
-    for (int i = 0; i < imageOut->norm_height; i++)
-    {
+    for (int i = 0; i < imageOut->norm_height; i++) {
         imageOut->pixels[i] = &shared_data->pixels[i * imageOut->header.width_px];
     }
 
@@ -67,13 +61,12 @@ int main(int argc, char *argv[])
     printf("Filas por hilo: %d\n", rowsPerThread);
 
     printf("Creando hilos...\n");
-    for (int i = 0; i < numThreads; i++)
-    {
+    for (int i = 0; i < numThreads; i++) {
         threadArgs[i].startRow = startRow + i * rowsPerThread;
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = simplifiedSobelFilter; // Aplicar el filtro Sobel simplificado
+        threadArgs[i].filter = simplifiedSobelFilter;  // Aplicar el filtro Sobel simplificado
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
 
@@ -81,8 +74,7 @@ int main(int argc, char *argv[])
     printf("Esperando a que los hilos terminen...\n");
 
     // Esperar a que todos los hilos terminen
-    for (int i = 0; i < numThreads; i++)
-    {
+    for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
     }
     printf("Hilos terminados\n");

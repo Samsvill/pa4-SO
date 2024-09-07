@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     printf("Memoria compartida accedida\n");
 
     // Verificar el estado inicial de half2_done
+    printf("Estado inicial de half1_done: %d\n", shared_data->half1_done);
     printf("Estado inicial de half2_done: %d\n", shared_data->half2_done);
 
     // Bloquear el mutex antes de esperar la condición
