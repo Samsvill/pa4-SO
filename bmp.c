@@ -231,6 +231,7 @@ int isValidHeader(BMP_Header *header)
     if (header->bits_per_pixel != 24)
     {
         printf("Error: Invalid BMP file bits_per_pixel\n");
+        printf("Bits per pixel: %d\n", header->bits_per_pixel);
         return 0;
     }
 
