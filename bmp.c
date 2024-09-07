@@ -36,7 +36,7 @@ BMP_Image *createBMPImage(FILE *fptr)
 
     printf("Entrando al malloc de image\n");
     BMP_Image *image = (BMP_Image *)malloc(sizeof(BMP_Image));
-    printf("BMP Image size disponible desde 0: %d\n", sizeof(image));
+    
 
     if (image == NULL)
     {
@@ -49,11 +49,6 @@ BMP_Image *createBMPImage(FILE *fptr)
     image->norm_height = abs(image->header.height_px);
     image->bytes_per_pixel = image->header.bits_per_pixel / 8;
 
-    printf("Header information:\n");
-    printf("  Width: %d px\n", image->header.width_px);
-    printf("  Height: %d px\n", image->header.height_px);
-    printf("  Bits per pixel: %d\n", image->header.bits_per_pixel);
-    printf("  File size: %d bytes\n", image->header.size);
 
     if (image->norm_height <= 0 || image->header.width_px <= 0)
     {
@@ -217,29 +212,4 @@ BMP_Image *initializeImageOut(BMP_Image *imageIn)
     }
 
     return imageOut;
-}
-
-// Funcion para verificar si un encabezado de BMP es válido e imprime el mesnaje de error correspondiente
-int isValidHeader(BMP_Header *header)
-{
-    if (header->type != 0x4D42)
-    {
-        printf("Error: Invalid BMP file type\n");
-        return 0;
-    }
-
-    if (header->bits_per_pixel != 24)
-    {
-        printf("Error: Invalid BMP file bits_per_pixel\n");
-        printf("Bits per pixel: %d\n", header->bits_per_pixel);
-        return 0;
-    }
-
-    if (header->compression != 0)
-    {
-        printf("Error: Invalid BMP file compression\n");
-        return 0;
-    }
-
-    return 1;
 }
