@@ -116,33 +116,39 @@ void writeImage(char *destFileName, BMP_Image *dataImage) {
     int padding = (4 - (dataImage->header.width_px * dataImage->bytes_per_pixel) % 4) % 4;
     uint8_t paddingBytes[3] = {0, 0, 0};  // El padding es solo ceros
 
-    //// Escribir los píxeles directamente desde `pixels_data`
-    //for (int i = 0; i < dataImage->norm_height; i++) {
-    //    //printf("Escribiendo fila %d de %d píxeles\n", i, dataImage->header.width_px);
-    //    if (fwrite(&dataImage->pixels_data[i * dataImage->header.width_px], 
-    //                dataImage->bytes_per_pixel, 
-    //                dataImage->header.width_px, 
-    //                destFile) != dataImage->header.width_px) {
-    //        printError(FILE_ERROR);
-    //        fclose(destFile);
-    //        exit(EXIT_FAILURE);
-    //    }
-//
-    //    // Escribir el padding
-    //    if (fwrite(paddingBytes, 1, padding, destFile) != padding) {
-    //        printError(FILE_ERROR);
-    //        fclose(destFile);
-    //        exit(EXIT_FAILURE);
-    //    }
-//
-    //    // Depuración: imprimir la fila que se está escribiendo
-    //    //printf("Escribiendo fila %d: ", i);
-    //    //for (int j = 0; j < dataImage->header.width_px; j++) {
-    //    //    Pixel *p = &dataImage->pixels_data[i * dataImage->header.width_px + j];
-    //    //    printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
-    //    //}
-    //    //printf("\n");
-    //}
+    // Escribir los píxeles directamente desde `pixels_data`
+    printf("Datos para el fwrite: %d\n", dataImage->norm_height);
+    for (int i = 0; i < dataImage->norm_height; i++) {
+        //printf("Escribiendo fila %d de %d píxeles\n", i, dataImage->header.width_px);
+        Pixel *pixels = &dataImage->pixels_data[i * dataImage->header.width_px];
+        int bytes_pixel = dataImage->bytes_per_pixel;
+        int width = dataImage->header.width_px;
+        printf(
+            "Escribiendo fila %d de %d píxeles, bytes por pixel: %d, ancho: %d\n",
+            i, dataImage->header.width_px, bytes_pixel, width
+        )
+
+        if (fwrite(pixels, bytes_pixel, width, destFile) != width) {
+            printError(FILE_ERROR);
+            fclose(destFile);
+            exit(EXIT_FAILURE);
+        }
+
+        // Escribir el padding
+        //if (fwrite(paddingBytes, 1, padding, destFile) != padding) {
+        //    printError(FILE_ERROR);
+        //    fclose(destFile);
+        //    exit(EXIT_FAILURE);
+        //}
+
+        // Depuración: imprimir la fila que se está escribiendo
+        //printf("Escribiendo fila %d: ", i);
+        //for (int j = 0; j < dataImage->header.width_px; j++) {
+        //    Pixel *p = &dataImage->pixels_data[i * dataImage->header.width_px + j];
+        //    printf("[%d, %d, %d] ", p->red, p->green, p->blue);  // Imprime valores RGB
+        //}
+        //printf("\n");
+    }
 
     fclose(destFile);
 }
