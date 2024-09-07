@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     pid_t pid_desenfocador = fork();
     if (pid_desenfocador == 0) {
         // Proceso hijo: lanzar el desenfocador
-        char *args[] = {"./desenfocador", argv[4], NULL};  // Número de hilos argv[4]
+        char *args[] = {"./desenfocador", shmid, argv[4], NULL};  // Número de hilos argv[4]
         execvp(args[0], args);
         perror("Error al ejecutar el desenfocador");
         exit(1);

@@ -7,24 +7,15 @@
 #include "bmp.h"
 #include "filter.h"
 
-#define SHM_KEY 1234  // Clave para la memoria compartida
-#define PATH_NAME "test.bmp"
-
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Uso: %s <número_hilos>\n", argv[0]);
+    // Verificar argumentos
+    if (argc != 3) {
+        fprintf(stderr, "Uso: %s <shmid> <numThreads>\n", argv[0]);
         return 1;
     }
 
-    int numThreads = atoi(argv[1]);
-
-    // Acceder a la memoria compartida (el publicador ya debería haber cargado la imagen)
-    key_t key = ftok(PATH_NAME, SHM_KEY);
-    int shmid = shmget(key, 0, 0666);
-    if (shmid == -1) {
-        perror("Error al acceder a la memoria compartida, ¿ejecutó el publicador?");
-        return 1;
-    }
+    int shmid = atoi(argv[1]);
+    int numThreads = atoi(argv[2]);
 
     // Adjuntar la memoria compartida
     SharedData *shared_data = (SharedData *)shmat(shmid, NULL, 0);
@@ -36,9 +27,9 @@ int main(int argc, char *argv[]) {
     printf("Memoria compartida accedida\n");
     printf("norm_height %d\n", shared_data->image.norm_height);
 
-    // Siempre operar en la primera mitad de la imagen
-    int startRow = 0;
-    int endRow = abs(shared_data->image.norm_height) / 2;
+    // Siempre operar en la segunda mitad de la imagen
+    int startRow = abs(shared_data->image.norm_height) / 2;
+    int endRow = abs(shared_data->image.norm_height);
 
     BMP_Image *imageIn = &(shared_data->image);
 
@@ -51,7 +42,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Crear hilos para aplicar el filtro
-    printf("Aplicando filtro de desenfoque en la primera mitad con %d hilos...\n", numThreads);
+    printf("Aplicando filtro en la segunda mitad con %d hilos...\n", numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
     int rowsPerThread = (endRow - startRow) / numThreads;
@@ -63,7 +54,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = blurFilter;  // Aplicar el filtro de desenfoque (blur)
+        threadArgs[i].filter = blurFilter;  // Aplicar el filtro Sobel simplificado
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
     }
 
@@ -75,18 +66,17 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[i], NULL);
     }
     printf("Hilos terminados\n");
-
     printf("Escribiendo imagen de salida...\n");
+
     // Bloquear el mutex antes de escribir en la memoria compartida
     printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));
     printf("Mutex bloqueado\n");
 
     // Marcar como procesado y enviar la señal correspondiente
-    printf("Marcando como procesado y enviando señal para la primera mitad...\n");
+    printf("Marcando como procesado y enviando señal para la segunda mitad...\n");
     shared_data->half1_done = 1;
     pthread_cond_signal(&(shared_data->cond_half1));
-
     printf("Listo\n");
 
     // Desbloquear el mutex
@@ -96,6 +86,5 @@ int main(int argc, char *argv[]) {
 
     // Desconectar de la memoria compartida
     shmdt(shared_data);
-
     return 0;
 }
