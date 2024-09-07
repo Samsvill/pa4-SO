@@ -10,14 +10,11 @@
 int main(int argc, char *argv[])
 {
     // Verificar argumentos
-    if (argc != 2)
-    {
-        fprintf(stderr, "Uso: %s <numThreads>\n", argv[0]);
-        return 1;
+    if (argc != 2) {
+        fprintf(stderr, "Uso: %s <output_file>\n", argv[0]);
     }
 
-    int numThreads = atoi(argv[2]);
-
+    char *output_file = argv[1];
     // Adjuntar la memoria compartida
     key_t key = ftok(PATH_NAME, SHM_KEY);
     if (key == -1)
