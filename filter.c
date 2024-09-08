@@ -63,7 +63,8 @@ void *applyFilter(void *args) {
 
                     if (newRow >= 0 && newRow < abs(imageIn->norm_height) &&
                         newCol >= 0 && newCol < width) {
-                        Pixel *p = &imageIn->pixels[newRow][newCol];
+                        // Acceder al píxel usando el bloque contiguo en pixels_data
+                        Pixel *p = &imageIn->pixels_data[newRow * width + newCol];
                         sumBlue += filter[x + 1][y + 1] * p->blue;
                         sumGreen += filter[x + 1][y + 1] * p->green;
                         sumRed += filter[x + 1][y + 1] * p->red;
@@ -79,11 +80,13 @@ void *applyFilter(void *args) {
             }
 
             // Limitar los valores entre 0 y 255
-            imageOut->pixels[row][col].blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
-            imageOut->pixels[row][col].green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
-            imageOut->pixels[row][col].red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
-            imageOut->pixels[row][col].alpha = 255;  // Asumimos que siempre es opaco
+            Pixel *outputPixel = &imageOut->pixels_data[row * width + col];
+            outputPixel->blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
+            outputPixel->green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
+            outputPixel->red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
+            outputPixel->alpha = 255;  // Asumimos que siempre es opaco
         }
     }
     pthread_exit(NULL);
 }
+
