@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    
+    printf("Entrando al desenfocador ______________________________________________________\n");
     int numThreads = atoi(argv[1]);
 
     // Adjuntar la memoria compartida
@@ -65,11 +65,10 @@ int main(int argc, char *argv[]) {
         threadArgs[i].imageOut = imageOut;
         threadArgs[i].filter = blurFilter;  // Aplicar el filtro Sobel simplificado
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
+        printf("Hilo %d creado\n", i);
     }
 
-    printf("Hilos creados\n");
     printf("Esperando a que los hilos terminen...\n");
-
     // Esperar a que todos los hilos terminen
     for (int i = 0; i < numThreads; i++) {
         pthread_join(threads[i], NULL);
