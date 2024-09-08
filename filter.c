@@ -41,15 +41,10 @@ void *applyFilter(void *args) {
     int width = imageIn->header.width_px;  // El ancho de la imagen
 
     // Sumar los valores del filtro para normalización
-    int filterSum = 0;
-    for (int x = 0; x < 3; x++) {
-        for (int y = 0; y < 3; y++) {
-            filterSum += filter[x][y];
-        }
-    }
 
     // Evitar divisiones por 0 si el filtro tiene sumas nulas
     
+    printf("startRow: %d, endRow: %d\n", startRow, endRow);
     
     for (int row = startRow; row < endRow; row++) {
         printf("dentro del primer for\n");
