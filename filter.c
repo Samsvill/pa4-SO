@@ -66,6 +66,8 @@ void *applyFilter(void *args) {
                     int newRow = row + x;
                     int newCol = col + y;
 
+                    printf("newRow: %d, newCol: %d\n", newRow, newCol);
+                    printf("newros: %d imageIn->norm_height abs: %d || newcol: %d imageIn->header.width_px: %d\n", newRow, abs(imageIn->norm_height), newCol, imageIn->header.width_px);
                     if (newRow >= 0 && newRow < abs(imageIn->norm_height) &&
                         newCol >= 0 && newCol < width) {
                         // Acceder al píxel usando el bloque contiguo en pixels_data
