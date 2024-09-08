@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     // Siempre operar en la segunda mitad de la imagen
     int startRow = 0;
-    int endRow = abs(shared_data->image.norm_height) / 2;
+    int endRow = shared_data->image.norm_height / 2;
 
     BMP_Image *imageIn = &(shared_data->image);
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     printf("Aplicando filtro en la primera mitad con %d hilos...\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", numThreads);
     pthread_t threads[numThreads];
     ThreadArgs threadArgs[numThreads];
-    int rowsPerThread = (endRow - startRow) / numThreads;
+    int rowsPerThread = abs(endRow - startRow) / numThreads;
     printf("Filas por hilo: %d\n", rowsPerThread);
 
     printf("Creando hilos...\n");
