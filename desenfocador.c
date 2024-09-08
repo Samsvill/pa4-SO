@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     // Siempre operar en la segunda mitad de la imagen
     int startRow = 0;
-    int endRow = shared_data->image.norm_height / 2;
+    int endRow = abs(shared_data->image.norm_height) / 2;
 
     BMP_Image *imageIn = &(shared_data->image);
 

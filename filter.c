@@ -45,26 +45,25 @@ void *applyFilter(void *args) {
     // Evitar divisiones por 0 si el filtro tiene sumas nulas
     
     printf("startRow: %d, endRow: %d\n", startRow, endRow);
-    
+
     for (int row = startRow; row < endRow; row++) {
-        printf("dentro del primer for\n");
-        
+        printf("dentro del %d row\n", row);
+
         for (int col = 0; col < width; col++) {
             int sumBlue = 0, sumGreen = 0, sumRed = 0;
-            printf("EDentro del segundo for\n");
+            printf("Dentro del row %d col %d\n", row, col);
             // Aplicar el filtro sobre la vecindad 3x3
             
             for (int x = -1; x <= 1; x++) {
-                printf("Dentro del tercer for\n");
                 for (int y = -1; y <= 1; y++) {
-                    printf("Dentro del cuarto for\n");
+                    printf("Probando esquina (%d, %d)\n", x, y);
                     int newRow = row + x;
                     int newCol = col + y;
 
                     printf("newRow: %d, newCol: %d\n", newRow, newCol);
                     printf("newros: %d imageIn->norm_height abs: %d || newcol: %d imageIn->header.width_px: %d\n", newRow, abs(imageIn->norm_height), newCol, imageIn->header.width_px);
-                    if (newRow >= 0 && newRow < abs(imageIn->norm_height) &&
-                        newCol >= 0 && newCol < width) {
+                    if (newRow >= 2 && newRow < abs(imageIn->norm_height)-2 &&
+                        newCol >= 2 && newCol < width)-2 {
                         // Acceder al píxel usando el bloque contiguo en pixels_data
                         Pixel *p = &imageIn->pixels_data[newRow * width + newCol];
                         sumBlue += filter[x + 1][y + 1] * p->blue;
