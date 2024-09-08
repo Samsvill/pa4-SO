@@ -80,11 +80,15 @@ void *applyFilter(void *args) {
             }
 
             // Limitar los valores entre 0 y 255
+
             Pixel *outputPixel = &imageOut->pixels_data[row * width + col];
             outputPixel->blue = (sumBlue < 0) ? 0 : (sumBlue > 255) ? 255 : sumBlue;
             outputPixel->green = (sumGreen < 0) ? 0 : (sumGreen > 255) ? 255 : sumGreen;
             outputPixel->red = (sumRed < 0) ? 0 : (sumRed > 255) ? 255 : sumRed;
             outputPixel->alpha = 255;  // Asumimos que siempre es opaco
+
+            printf("Fila: %d, Columna: %d\n", row, col);
+            printf("Blue: %d, Green: %d, Red: %d\n", outputPixel->blue, outputPixel->green, outputPixel->red);
         }
     }
     pthread_exit(NULL);
