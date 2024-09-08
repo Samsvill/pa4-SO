@@ -49,19 +49,20 @@ void *applyFilter(void *args) {
     }
 
     // Evitar divisiones por 0 si el filtro tiene sumas nulas
-    int needsNormalization = (filterSum != 0);  // Solo normalizamos si el filtro lo requiere
-    printf("Filtro necesita normalización: %d\n", needsNormalization);
-    printf("Entrando al primer for\n");
+    
+    
     for (int row = startRow; row < endRow; row++) {
-        printf("Entrando al segundo for\n");
+        printf("dentro del primer for\n");
+        
         for (int col = 0; col < width; col++) {
             int sumBlue = 0, sumGreen = 0, sumRed = 0;
-
+            printf("EDentro del segundo for\n");
             // Aplicar el filtro sobre la vecindad 3x3
+            
             for (int x = -1; x <= 1; x++) {
-                printf("Entrando al tercer for\n");
+                printf("Dentro del tercer for\n");
                 for (int y = -1; y <= 1; y++) {
-                    printf("Entrando al cuarto for\n");
+                    printf("Dentro del cuarto for\n");
                     int newRow = row + x;
                     int newCol = col + y;
 
@@ -72,6 +73,8 @@ void *applyFilter(void *args) {
                         sumBlue += filter[x + 1][y + 1] * p->blue;
                         sumGreen += filter[x + 1][y + 1] * p->green;
                         sumRed += filter[x + 1][y + 1] * p->red;
+                        
+                        printf("sumBlue: %d, sumGreen: %d, sumRed: %d\n", sumBlue, sumGreen, sumRed);
                     }
                 }
             }
