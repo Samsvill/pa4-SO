@@ -76,13 +76,6 @@ void *applyFilter(void *args) {
                 }
             }
 
-            // Normalizar solo si es necesario
-            if (needsNormalization) {
-                sumBlue /= filterSum;
-                sumGreen /= filterSum;
-                sumRed /= filterSum;
-            }
-
             // Limitar los valores entre 0 y 255
 
             Pixel *outputPixel = &imageOut->pixels_data[row * width + col];
