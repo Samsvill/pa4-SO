@@ -49,12 +49,6 @@ int main(int argc, char *argv[]) {
     // Usar directamente la imagen en la memoria compartida para modificarla
     BMP_Image *imageOut = &(shared_data->image);  
 
-    // Inicializar los punteros a las filas en la memoria compartida
-    printf("Inicializando punteros a las filas...\n");
-    for (int i = 0; i < abs(imageOut->norm_height); i++) {
-        imageOut->pixels[i] = &shared_data->pixels[i * imageOut->header.width_px];
-    }
-    printf("Punteros inicializados\n");
 
     // Crear hilos para aplicar el filtro
     printf("Aplicando filtro en la primera mitad con %d hilos...\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", numThreads);
