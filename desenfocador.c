@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         threadArgs[i].endRow = (i == numThreads - 1) ? endRow : threadArgs[i].startRow + rowsPerThread;
         threadArgs[i].imageIn = imageIn;
         threadArgs[i].imageOut = imageOut;
-        threadArgs[i].filter = blurFilter;  // Aplicar el filtro Sobel simplificado
+        - // Aplicar el filtro Sobel simplificado
         pthread_create(&threads[i], NULL, applyFilter, &threadArgs[i]);
         printf("Hilo %d creado\n", i);
     }
@@ -94,5 +94,6 @@ int main(int argc, char *argv[]) {
 
     // Desconectar de la memoria compartida
     shmdt(shared_data);
+    printf("Saliendo del desenfocador ______________________________________________________\n");
     return 0;
 }

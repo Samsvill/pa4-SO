@@ -72,7 +72,7 @@ void *applyFilter(void *args) {
                         
                         printf("sumBlue: %d, sumGreen: %d, sumRed: %d\n", sumBlue, sumGreen, sumRed);
                     }
-                    printf("Saliendo del if")
+                    printf("Saliendo del if");
                 }
             }
 
