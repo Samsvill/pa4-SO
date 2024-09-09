@@ -65,13 +65,14 @@ void *applyFilter(void *args) {
                     if (newRow >= 2 && newRow < abs(imageIn->norm_height)-2 &&
                         newCol >= 2 && newCol < (width-2)) {
                         // Acceder al píxel usando el bloque contiguo en pixels_data
-                        Pixel *p = &imageIn->pixels_data[newRow * width + newCol];
+                        Pixel *p = &imageIn->pixels_data[newRow * width + newCol]; 
                         sumBlue += filter[x + 1][y + 1] * p->blue;
                         sumGreen += filter[x + 1][y + 1] * p->green;
                         sumRed += filter[x + 1][y + 1] * p->red;
                         
                         printf("sumBlue: %d, sumGreen: %d, sumRed: %d\n", sumBlue, sumGreen, sumRed);
                     }
+                    printf("Saliendo del if")
                 }
             }
 
