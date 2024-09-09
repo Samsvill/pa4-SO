@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     BMP_Image *imageIn = &(shared_data->image);
 
     // Usar directamente la imagen en la memoria compartida para modificarla
-    BMP_Image *imageOut = &(shared_data->image);  
+    BMP_Image *imageOut = initializeImageOut(imageIn);
 
 
     // Crear hilos para aplicar el filtro
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     }
     printf("Hilos terminados\n");
     printf("Escribiendo imagen de salida...\n");
-
+    writeImage("out.bmp", imageOut);
     // Bloquear el mutex antes de escribir en la memoria compartida
     printf("Bloqueando mutex...\n");
     pthread_mutex_lock(&(shared_data->mutex));

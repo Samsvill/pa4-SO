@@ -62,8 +62,8 @@ void *applyFilter(void *args) {
 
                     printf("newRow: %d, newCol: %d\n", newRow, newCol);
                     printf("newros: %d imageIn->norm_height abs: %d || newcol: %d imageIn->header.width_px: %d\n", newRow, abs(imageIn->norm_height), newCol, imageIn->header.width_px);
-                    if (newRow >= 2 && newRow < abs(imageIn->norm_height)-2 &&
-                        newCol >= 2 && newCol < (width-2)) {
+                    if (newRow >= 0 && newRow < abs(imageIn->norm_height) &&
+                        newCol >= 0 && newCol < (width)) {
                         // Acceder al píxel usando el bloque contiguo en pixels_data
                         Pixel *p = &imageIn->pixels_data[newRow * width + newCol]; 
                         sumBlue += filter[x + 1][y + 1] * p->blue;
